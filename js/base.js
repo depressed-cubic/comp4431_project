@@ -1,5 +1,3 @@
-import '../lib/chart.js'
-
 import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
 (function(imageproc) {
@@ -282,10 +280,10 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
         //        }
 	//	break;
 	    case "color":
-                /**
-                 * DONE: You need to apply the same procedure for each RGB channel
-                 *       based on what you have done for the grayscale version
-                 */
+          /**
+           * DONE: You need to apply the same procedure for each RGB channel
+           *       based on what you have done for the grayscale version
+           */
 
 	        let histo_r = buildHistogram(inputData, "red")
 	        let histo_g = buildHistogram(inputData, "green")
@@ -299,16 +297,18 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 	        let min_g = minMax_g.min, max_g = minMax_g.max, range_g = max_g - min_g
 	        let min_b = minMax_b.min, max_b = minMax_b.max, range_b = max_b - min_b
 
-                for (var i = 0; i < inputData.data.length; i += 4) {
-                    // Adjust each channel based on the histogram of each one
+          for (var i = 0; i < inputData.data.length; i += 4) {
+              // Adjust each channel based on the histogram of each one
 
-                    outputData.data[i]     = (inputData.data[i] - min_r) / range_r * 255;
-                    outputData.data[i + 1] = (inputData.data[i + 1] - min_g) / range_g * 255;
-                    outputData.data[i + 2] = (inputData.data[i + 2] - min_b) / range_b * 255;
-                }
+              outputData.data[i]     = (inputData.data[i] - min_r) / range_r * 255;
+              outputData.data[i + 1] = (inputData.data[i + 1] - min_g) / range_g * 255;
+              outputData.data[i + 2] = (inputData.data[i + 2] - min_b) / range_b * 255;
+          }
+          break;
+
 	    case "gray":
 
-                histogram = buildHistogram(inputData, "gray");
+          histogram = buildHistogram(inputData, "gray");
 
 		let cum_histogram = [histogram[0]];
 
@@ -348,6 +348,7 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
       backgroundColor: "rgb(128, 128, 128)"
     }]);
     updateHistogram(newChart, [{
+      label: "gray-channel",
       data: buildHistogram(outputData, "gray"),
       backgroundColor: "rgb(128, 128, 128)"
     }]);
