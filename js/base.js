@@ -1,3 +1,5 @@
+import Chart from '../lib/charts'
+
 (function(imageproc) {
     "use strict";
 
@@ -255,54 +257,102 @@
         var pixelsToIgnore = (inputData.data.length / 4) * percentage / 2;
 
         var histogram, minMax;
-        if (type == "gray") {
-            // Build the grayscale histogram
-            histogram = buildHistogram(inputData, "gray");
+	switch (type) {
+	//    case "gray":
+        //        // Build the grayscale histogram
+        //        histogram = buildHistogram(inputData, "gray");
 
-            // Find the minimum and maximum grayscale values with non-zero pixels
-            minMax = findMinMax(histogram, pixelsToIgnore);
+        //        // Find the minimum and maximum grayscale values with non-zero pixels
+        //        minMax = findMinMax(histogram, pixelsToIgnore);
 
-            var min = minMax.min, max = minMax.max, range = max - min;
+        //        var min = minMax.min, max = minMax.max, range = max - min;
 
-            /**
-             * DONE: You need to apply the correct adjustment to each pixel
-             */
+        //        /**
+        //         * DONE: You need to apply the correct adjustment to each pixel
+        //         */
 
-            for (var i = 0; i < inputData.data.length; i += 4) {
-                // Adjust each pixel based on the minimum and maximum values
+        //        for (var i = 0; i < inputData.data.length; i += 4) {
+        //            // Adjust each pixel based on the minimum and maximum values
 
-                outputData.data[i]     = (inputData.data[i] - min) / range * 255;
-                outputData.data[i + 1] = (inputData.data[i + 1] - min) / range * 255;
-                outputData.data[i + 2] = (inputData.data[i + 2] - min) / range * 255;
-            }
-        }
-        else {
+        //            outputData.data[i]     = (inputData.data[i] - min) / range * 255;
+        //            outputData.data[i + 1] = (inputData.data[i + 1] - min) / range * 255;
+        //            outputData.data[i + 2] = (inputData.data[i + 2] - min) / range * 255;
+        //        }
+	//	break;
+	    case "color":
+                /**
+                 * DONE: You need to apply the same procedure for each RGB channel
+                 *       based on what you have done for the grayscale version
+                 */
 
-            /**
-             * DONE: You need to apply the same procedure for each RGB channel
-             *       based on what you have done for the grayscale version
-             */
+	        let histo_r = buildHistogram(inputData, "red")
+	        let histo_g = buildHistogram(inputData, "green")
+	        let histo_b = buildHistogram(inputData, "blue")
 
-	    let histo_r = buildHistogram(inputData, "red")
-	    let histo_g = buildHistogram(inputData, "green")
-	    let histo_b = buildHistogram(inputData, "blue")
+	        let minMax_r = findMinMax(histo_r, pixelsToIgnore)
+	        let minMax_g = findMinMax(histo_g, pixelsToIgnore)
+	        let minMax_b = findMinMax(histo_b, pixelsToIgnore)
+	        
+	        let min_r = minMax_r.min, max_r = minMax_r.max, range_r = max_r - min_r
+	        let min_g = minMax_g.min, max_g = minMax_g.max, range_g = max_g - min_g
+	        let min_b = minMax_b.min, max_b = minMax_b.max, range_b = max_b - min_b
 
-	    let minMax_r = findMinMax(histo_r, pixelsToIgnore)
-	    let minMax_g = findMinMax(histo_g, pixelsToIgnore)
-	    let minMax_b = findMinMax(histo_b, pixelsToIgnore)
-	    
-	    let min_r = minMax_r.min, max_r = minMax_r.max, range_r = max_r - min_r
-	    let min_g = minMax_g.min, max_g = minMax_g.max, range_g = max_g - min_g
-	    let min_b = minMax_b.min, max_b = minMax_b.max, range_b = max_b - min_b
+                for (var i = 0; i < inputData.data.length; i += 4) {
+                    // Adjust each channel based on the histogram of each one
 
-            for (var i = 0; i < inputData.data.length; i += 4) {
-                // Adjust each channel based on the histogram of each one
+                    outputData.data[i]     = (inputData.data[i] - min_r) / range_r * 255;
+                    outputData.data[i + 1] = (inputData.data[i + 1] - min_g) / range_g * 255;
+                    outputData.data[i + 2] = (inputData.data[i + 2] - min_b) / range_b * 255;
+                }
+	    case "gray":
 
-                outputData.data[i]     = (inputData.data[i] - min_r) / range_r * 255;
-                outputData.data[i + 1] = (inputData.data[i + 1] - min_g) / range_g * 255;
-                outputData.data[i + 2] = (inputData.data[i + 2] - min_b) / range_b * 255;
-            }
-        }
+                histogram = buildHistogram(inputData, "gray");
+
+		let cum_histogram = [histogram[0]];
+
+		let max_histogram = 0;
+
+		// make cdf
+		for (let i = 1; i < 256; i++) {
+		    let tmp = (cum_histogram[i-1] + histogram[i])
+		    cum_histogram.push(tmp)
+		    if (tmp > max_histogram) {
+			max_histogram = tmp
+		    }
+		}
+		// normalize cdf
+		for (let i = 0; i < 256; i++) {
+		    cum_histogram[i] = parseInt(cum_histogram[i] / max_histogram * 255) 
+		}
+
+                for (let i = 0; i < inputData.data.length; i += 4) {
+                    // Adjust each pixel based on the minimum and maximum values
+
+		    let gray = (inputData.data[i] + inputData.data[i + 1] + inputData.data[i + 2]) / 3
+
+		    let mult = cum_histogram[Math.min(255, parseInt(gray))] / gray
+
+		    outputData.data[i]     = Math.min(255, inputData.data[i]     * mult)
+                    outputData.data[i + 1] = Math.min(255, inputData.data[i + 1] * mult)
+                    outputData.data[i + 2] = Math.min(255, inputData.data[i + 2] * mult)
+
+                }
+
+		const chart = new Chart(document.getElementById("histogram-before"), {
+		  type: 'bar',
+		  data: {
+		    labels: Array(256).keys(),
+		    datasets: [
+		      {
+		        label: 'say gex',
+		        data: histogram
+		      }
+		    ]
+		  }
+		})
+		
+		break;
+	}
     }
 
 }(window.imageproc = window.imageproc || {}));
