@@ -256,29 +256,29 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
         // Find the number of pixels to ignore from the percentage
         var pixelsToIgnore = (inputData.data.length / 4) * percentage / 2;
 
-        var histogram, minMax;
+        let histogram, minMax;
 	switch (type) {
-	//    case "gray":
-        //        // Build the grayscale histogram
-        //        histogram = buildHistogram(inputData, "gray");
+            case "gray":
+                // Build the grayscale histogram
+                histogram = buildHistogram(inputData, "gray");
 
-        //        // Find the minimum and maximum grayscale values with non-zero pixels
-        //        minMax = findMinMax(histogram, pixelsToIgnore);
+                // Find the minimum and maximum grayscale values with non-zero pixels
+                minMax = findMinMax(histogram, pixelsToIgnore);
 
-        //        var min = minMax.min, max = minMax.max, range = max - min;
+                var min = minMax.min, max = minMax.max, range = max - min;
 
-        //        /**
-        //         * DONE: You need to apply the correct adjustment to each pixel
-        //         */
+                /**
+                * DONE: You need to apply the correct adjustment to each pixel
+                */
 
-        //        for (var i = 0; i < inputData.data.length; i += 4) {
-        //            // Adjust each pixel based on the minimum and maximum values
+                for (var i = 0; i < inputData.data.length; i += 4) {
+                   // Adjust each pixel based on the minimum and maximum values
 
-        //            outputData.data[i]     = (inputData.data[i] - min) / range * 255;
-        //            outputData.data[i + 1] = (inputData.data[i + 1] - min) / range * 255;
-        //            outputData.data[i + 2] = (inputData.data[i + 2] - min) / range * 255;
-        //        }
-	//	break;
+                   outputData.data[i]     = (inputData.data[i] - min) / range * 255;
+                   outputData.data[i + 1] = (inputData.data[i + 1] - min) / range * 255;
+                   outputData.data[i + 2] = (inputData.data[i + 2] - min) / range * 255;
+                }
+                break;
 	    case "color":
           /**
            * DONE: You need to apply the same procedure for each RGB channel
@@ -297,18 +297,17 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 	        let min_g = minMax_g.min, max_g = minMax_g.max, range_g = max_g - min_g
 	        let min_b = minMax_b.min, max_b = minMax_b.max, range_b = max_b - min_b
 
-          for (var i = 0; i < inputData.data.length; i += 4) {
-              // Adjust each channel based on the histogram of each one
+                for (var i = 0; i < inputData.data.length; i += 4) {
+                    // Adjust each channel based on the histogram of each one
 
-              outputData.data[i]     = (inputData.data[i] - min_r) / range_r * 255;
-              outputData.data[i + 1] = (inputData.data[i + 1] - min_g) / range_g * 255;
-              outputData.data[i + 2] = (inputData.data[i + 2] - min_b) / range_b * 255;
-          }
-          break;
+                    outputData.data[i]     = (inputData.data[i] - min_r) / range_r * 255;
+                    outputData.data[i + 1] = (inputData.data[i + 1] - min_g) / range_g * 255;
+                    outputData.data[i + 2] = (inputData.data[i + 2] - min_b) / range_b * 255;
+                }
+                break;
 
-	    case "gray":
-
-          histogram = buildHistogram(inputData, "gray");
+	    case "gray-equal": {
+                histogram = buildHistogram(inputData, "gray");
 
 		let cum_histogram = [histogram[0]];
 
@@ -340,93 +339,81 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
                 }
     
-    // const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
-    // const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
+		const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
+    		const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
 
-    // updateHistogram(oldChart, [{
-    //   data: histogram,
-    //   backgroundColor: "rgb(128, 128, 128)"
-    // }]);
-    // updateHistogram(newChart, [{
-    //   label: "gray-channel",
-    //   data: buildHistogram(outputData, "gray"),
-    //   backgroundColor: "rgb(128, 128, 128)"
-    // }]);
-		// const chart = new Chart(document.getElementById("histogram-before"), {
-		//   type: 'bar',
-		//   data: {
-		//     labels: [...Array(256).keys()],
-		//     datasets: [
-		//       {
-		//         data: histogram,
-    //         backgroundColor: "rgb(128, 128, 128)"
-		//       }
-		//     ]
-		//   },
-		//   options: {
-    //     scales: {
-    //       x: {
-    //         grid: {
-    //           display: false,
-    //         },
-    //         ticks: {
-    //           display: false
-    //         }
-    //       },
-    //       y: {
-    //         grid: {
-    //           display: false,
-    //         },
-    //         ticks: {
-    //           display: false
-    //         }
-    //       }
-    //     },
-		//     plugins: {
-		// 	legend: {
-		//     	    display: false
-		//     	}
-		//     }
-		//   }
-		// })
-		
-		// const chart2 = new Chart(document.getElementById("histogram-after"), {
-		//   type: 'bar',
-		//   data: {
-		//     labels: [...Array(256).keys()],
-		//     datasets: [
-		//       {
-		//         data: buildHistogram(outputData, "gray"),
-    //         backgroundColor: "rgb(128, 128, 128)"
-		//       }
-		//     ]
-		//   },
-		//   options: {
-    //     scales: {
-    //       x: {
-    //         grid: {
-    //           display: false,
-    //         },
-    //         ticks: {
-    //           display: false
-    //         }
-    //       },
-    //       y: {
-    //         grid: {
-    //           display: false,
-    //         },
-    //         ticks: {
-    //           display: false
-    //         }
-    //       }
-    //     },
-		//     plugins: {
-		// 	legend: {
-		//     	    display: false
-		//     	}
-		//     }
-		//   }
-		// })
+    		updateHistogram(oldChart, [{
+    		  data: histogram,
+    		  backgroundColor: "rgb(128, 128, 128)"
+    		}]);
+    		updateHistogram(newChart, [{
+    		  data: buildHistogram(outputData, "gray"),
+    		  backgroundColor: "rgb(128, 128, 128)"
+    		}]);
+            }
+		break;
+
+	    case "color-equal": {
+
+                histogram = {
+                    r: buildHistogram(inputData, "red"),
+                    g: buildHistogram(inputData, "green"),
+                    b: buildHistogram(inputData, "blue")
+                }
+
+		let cum_histogram = {
+                    r: [histogram.r[0]],
+                    g: [histogram.g[0]],
+                    b: [histogram.b[0]]
+                }
+
+		let max_histogram = {
+                    r: 0,
+                    g: 0,
+                    b: 0
+                }
+
+		// make cdf
+                for (let color in cum_histogram){
+		    for (let i = 1; i < 256; i++) {
+		        let tmp = (cum_histogram[color][i-1] + histogram[color][i])
+		        cum_histogram[color].push(tmp)
+		        if (tmp > max_histogram[color]) {
+		    	    max_histogram[color] = tmp
+		        }
+		    }
+                }
+
+		// normalize cdf
+                for (let color in cum_histogram){
+                    for (let i = 0; i < 256; i++) {
+                        cum_histogram[color][i] = parseInt(cum_histogram[color][i] / max_histogram[color] * 255) 
+                    }
+                }
+
+                for (let i = 0; i < inputData.data.length; i += 4) {
+
+                    // Adjust each pixel based on the minimum and maximum values
+		    outputData.data[i]     = Math.min(255, cum_histogram.r[inputData.data[i]])
+                    outputData.data[i + 1] = Math.min(255, cum_histogram.g[inputData.data[i + 1]])
+                    outputData.data[i + 2] = Math.min(255, cum_histogram.b[inputData.data[i + 2]])
+
+                }
+
+                console.log(cum_histogram)
+    
+		const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
+    		const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
+
+    		updateHistogram(oldChart, [{
+    		  data: buildHistogram(inputData, "gray"),
+    		  backgroundColor: "rgb(128, 128, 128)"
+    		}]);
+    		updateHistogram(newChart, [{
+    		  data: buildHistogram(outputData, "gray"),
+    		  backgroundColor: "rgb(128, 128, 128)"
+    		}]);
+            }
 		break;
 	}
     }
