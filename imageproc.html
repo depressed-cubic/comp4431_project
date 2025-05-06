@@ -19,6 +19,7 @@
     .nav-tabs, .nav-tabs .dropdown-item { font-size: 14px; }
     .toggle { height: 38px !important; }
     canvas { border: 1px solid black; }
+    .histogram-canvas { width: 100%; height: 100%; border: 0px; }
     </style>
 </head>
 <body>
@@ -276,15 +277,35 @@
                         </div>
                         <hr>
                         <div class="container-fluid">
-                          <span>Histogram visualization:</span>
+                          <h5>Histogram visualization</h5>
                             <div class="row">
                                 <div class="col">
                                     <span>Before:</span>
-                                    <canvas id="histogram-before"></canvas>
+                                    <canvas class="histogram-canvas" id="histogram-before">
+                                    </canvas>
                                 </div>
                                 <div class="col">
                                     <span>After:</span>
-                                    <canvas id="histogram-after"></canvas>
+                                    <canvas class="histogram-canvas" id="histogram-after">
+                                    </canvas>
+                                </div>
+                            </div>
+                            <div class="d-flex spaced align-items-center justify-content-between mt-2">
+                                <label for="auto-contrast-histogram-red">Red:</label>
+                                <div class="input-group ml-2">
+                                    <input class="form-control toggle-control" id="histogram-red" type="checkbox" />
+                                </div>
+                                <label for="auto-contrast-histogram-green">Green:</label>
+                                <div class="input-group ml-2">
+                                    <input class="form-control toggle-control" id="histogram-green" type="checkbox" />
+                                </div>
+                                <label for="auto-contrast-histogram-blue">Blue:</label>
+                                <div class="input-group ml-2">
+                                    <input class="form-control toggle-control" id="histogram-blue" type="checkbox" />
+                                </div>
+                                <label for="auto-contrast-histogram-gray">Gray:</label>
+                                <div class="input-group ml-2">
+                                    <input class="form-control toggle-control" id="histogram-gray" type="checkbox" />
                                 </div>
                             </div>
                         </div>
