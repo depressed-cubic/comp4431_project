@@ -1,5 +1,7 @@
 import '../lib/chart.js'
 
+import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
+
 (function(imageproc) {
     "use strict";
 
@@ -337,45 +339,93 @@ import '../lib/chart.js'
                     outputData.data[i + 2] = Math.min(255, inputData.data[i + 2] * mult)
 
                 }
+    
+    const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
+    const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
 
-		const chart = new Chart(document.getElementById("histogram-before"), {
-		  type: 'bar',
-		  data: {
-		    labels: [...Array(256).keys()],
-		    datasets: [
-		      {
-		        data: histogram
-		      }
-		    ]
-		  },
-		  options: {
-		    plugins: {
-			legend: {
-		    	    display: false
-		    	}
-		    }
-		  }
-		})
+    updateHistogram(oldChart, [{
+      data: histogram,
+      backgroundColor: "rgb(128, 128, 128)"
+    }]);
+    updateHistogram(newChart, [{
+      data: buildHistogram(outputData, "gray"),
+      backgroundColor: "rgb(128, 128, 128)"
+    }]);
+		// const chart = new Chart(document.getElementById("histogram-before"), {
+		//   type: 'bar',
+		//   data: {
+		//     labels: [...Array(256).keys()],
+		//     datasets: [
+		//       {
+		//         data: histogram,
+    //         backgroundColor: "rgb(128, 128, 128)"
+		//       }
+		//     ]
+		//   },
+		//   options: {
+    //     scales: {
+    //       x: {
+    //         grid: {
+    //           display: false,
+    //         },
+    //         ticks: {
+    //           display: false
+    //         }
+    //       },
+    //       y: {
+    //         grid: {
+    //           display: false,
+    //         },
+    //         ticks: {
+    //           display: false
+    //         }
+    //       }
+    //     },
+		//     plugins: {
+		// 	legend: {
+		//     	    display: false
+		//     	}
+		//     }
+		//   }
+		// })
 		
-		const chart2 = new Chart(document.getElementById("histogram-after"), {
-		  type: 'bar',
-		  data: {
-		    labels: [...Array(256).keys()],
-		    datasets: [
-		      {
-		        label: 'say gex',
-		        data: buildHistogram(outputData, "gray")
-		      }
-		    ]
-		  },
-		  options: {
-		    plugins: {
-			legend: {
-		    	    display: false
-		    	}
-		    }
-		  }
-		})
+		// const chart2 = new Chart(document.getElementById("histogram-after"), {
+		//   type: 'bar',
+		//   data: {
+		//     labels: [...Array(256).keys()],
+		//     datasets: [
+		//       {
+		//         data: buildHistogram(outputData, "gray"),
+    //         backgroundColor: "rgb(128, 128, 128)"
+		//       }
+		//     ]
+		//   },
+		//   options: {
+    //     scales: {
+    //       x: {
+    //         grid: {
+    //           display: false,
+    //         },
+    //         ticks: {
+    //           display: false
+    //         }
+    //       },
+    //       y: {
+    //         grid: {
+    //           display: false,
+    //         },
+    //         ticks: {
+    //           display: false
+    //         }
+    //       }
+    //     },
+		//     plugins: {
+		// 	legend: {
+		//     	    display: false
+		//     	}
+		//     }
+		//   }
+		// })
 		break;
 	}
     }
