@@ -12,8 +12,8 @@
     imageproc.init = function(inputCanvasId,
                               outputCanvasId,
                               inputImageId) {
-        input  = $("#" + inputCanvasId).get(0).getContext("2d");
-        output = $("#" + outputCanvasId).get(0).getContext("2d");
+        input  = $("#" + inputCanvasId).get(0).getContext("2d", { willReadFrequently: true });
+        output = $("#" + outputCanvasId).get(0).getContext("2d", { willReadFrequently: true });
 
         imageSelector = $("#" + inputImageId);
         imageproc.updateInputImage();
@@ -28,6 +28,19 @@
             input.drawImage(image, 0, 0);
         }
         image.src = "images/" + imageSelector.val();
+    }
+
+    imageproc.renderHistogram = function() {
+        // Get the input image and create the output image buffer
+        var inputImage = input.getImageData(0, 0,
+                         input.canvas.clientWidth, input.canvas.clientHeight);
+        var outputImage = output.getImageData(0, 0,
+                         input.canvas.clientWidth, input.canvas.clientHeight);
+
+        if (imageproc._renderHistogram) {
+            // Apply the operation
+            imageproc._renderHistogram(inputImage, outputImage);
+        }
     }
 
     /*

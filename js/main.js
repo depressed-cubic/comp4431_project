@@ -95,15 +95,21 @@ $(document).ready(function() {
     imageproc.init("input", "output", "input-image");
 
     // Update the input image when the selection is changed
-    $("#input-image").on("change", function() { imageproc.updateInputImage(); });
+    $("#input-image").on("change", function() { imageproc.updateInputImage(); imageproc.renderHistogram(); });
 
     // Update button to apply all image processing functions
-    $("#output-update").on("click", function() { imageproc.apply(); });
-    
+    $("#output-update").on("click", function() { imageproc.apply(); imageproc.renderHistogram(); });
+
     // Enable Bootstrap Toggle
     $("input[type=checkbox]").bootstrapToggle();
 
     // Set up the event handlers
     $('a.nav-link').on("click", showTab); // Tab clicked
     $('a.dropdown-item').on("click", changeTabs); // Tab item clicked
+
+    // Set up the histogram
+    $("#histogram-red").on("change", () => imageproc.renderHistogram());
+    $("#histogram-green").on("change", () => imageproc.renderHistogram());
+    $("#histogram-blue").on("change", () => imageproc.renderHistogram());
+    $("#histogram-gray").on("change", () => imageproc.renderHistogram());
 });

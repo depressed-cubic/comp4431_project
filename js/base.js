@@ -340,18 +340,18 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
                 }
     
-    const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
-    const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
+    // const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
+    // const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
 
-    updateHistogram(oldChart, [{
-      data: histogram,
-      backgroundColor: "rgb(128, 128, 128)"
-    }]);
-    updateHistogram(newChart, [{
-      label: "gray-channel",
-      data: buildHistogram(outputData, "gray"),
-      backgroundColor: "rgb(128, 128, 128)"
-    }]);
+    // updateHistogram(oldChart, [{
+    //   data: histogram,
+    //   backgroundColor: "rgb(128, 128, 128)"
+    // }]);
+    // updateHistogram(newChart, [{
+    //   label: "gray-channel",
+    //   data: buildHistogram(outputData, "gray"),
+    //   backgroundColor: "rgb(128, 128, 128)"
+    // }]);
 		// const chart = new Chart(document.getElementById("histogram-before"), {
 		//   type: 'bar',
 		//   data: {
@@ -430,5 +430,79 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 		break;
 	}
     }
+
+    imageproc._renderHistogram = function(inputData, outputData) {
+
+        var isRenderingRed = $("#histogram-red").prop("checked");
+        var isRenderingGreen = $("#histogram-green").prop("checked");
+        var isRenderingBlue = $("#histogram-blue").prop("checked");
+        var isRenderingGray = $("#histogram-gray").prop("checked");
+
+        var dataBefore = [];
+        var dataAfter = [];
+
+        if (isRenderingRed) {
+            let histogramBeforeRed = buildHistogram(inputData, "red");
+            let histogramAfterRed = buildHistogram(outputData, "red");
+            dataBefore.push({
+                label: "red-channel",
+                data: histogramBeforeRed,
+                backgroundColor: "rgba(255, 0, 0, 0.5)"
+            });
+            dataAfter.push({
+                label: "red-channel",
+                data: histogramAfterRed,
+                backgroundColor: "rgba(255, 0, 0, 0.5)"
+            });
+        }
+        if (isRenderingGreen) {
+            let histogramGreenBefore = buildHistogram(inputData, "green");
+            let histogramGreenAfter = buildHistogram(outputData, "green");
+            dataBefore.push({
+                label: "green-channel",
+                data: histogramGreenBefore,
+                backgroundColor: "rgba(0, 255, 0, 0.5)"
+            });
+            dataAfter.push({
+                label: "green-channel",
+                data: histogramGreenAfter,
+                backgroundColor: "rgba(0, 255, 0, 0.5)"
+            });
+        }
+        if (isRenderingBlue) {
+            let histogramBlueBefore = buildHistogram(inputData, "blue");
+            let histogramBlueAfter = buildHistogram(outputData, "blue");
+            dataBefore.push({
+                label: "blue-channel",
+                data: histogramBlueBefore,
+                backgroundColor: "rgba(0, 0, 255, 0.5)"
+            });
+            dataAfter.push({
+                label: "blue-channel",
+                data: histogramBlueAfter,
+                backgroundColor: "rgba(0, 0, 255, 0.5)"
+            });
+        }
+        if (isRenderingGray) {
+            let histogramGrayBefore = buildHistogram(inputData, "gray");
+            let histogramGrayAfter = buildHistogram(outputData, "gray");
+            dataBefore.push({
+                label: "gray-channel",
+                data: histogramGrayBefore,
+                backgroundColor: "rgba(128, 128, 128, 0.5)"
+            });
+            dataAfter.push({
+                label: "gray-channel",
+                data: histogramGrayAfter,
+                backgroundColor: "rgba(128, 128, 128, 0.5)"
+            });
+        }
+        const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
+        const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
+
+        updateHistogram(oldChart, dataBefore);
+        updateHistogram(newChart, dataAfter);
+    }
+
 
 }(window.imageproc = window.imageproc || {}));

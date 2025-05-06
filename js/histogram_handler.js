@@ -23,6 +23,7 @@ function initOrGetHistogram(canvas) {
     options: {
       scales: {
         x: {
+          stacked: true,
           grid: {
             display: false,
           },
