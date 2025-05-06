@@ -1,4 +1,4 @@
-import Chart from '../lib/charts'
+import '../lib/chart.js'
 
 (function(imageproc) {
     "use strict";
@@ -341,16 +341,41 @@ import Chart from '../lib/charts'
 		const chart = new Chart(document.getElementById("histogram-before"), {
 		  type: 'bar',
 		  data: {
-		    labels: Array(256).keys(),
+		    labels: [...Array(256).keys()],
 		    datasets: [
 		      {
-		        label: 'say gex',
 		        data: histogram
 		      }
 		    ]
+		  },
+		  options: {
+		    plugins: {
+			legend: {
+		    	    display: false
+		    	}
+		    }
 		  }
 		})
 		
+		const chart2 = new Chart(document.getElementById("histogram-after"), {
+		  type: 'bar',
+		  data: {
+		    labels: [...Array(256).keys()],
+		    datasets: [
+		      {
+		        label: 'say gex',
+		        data: buildHistogram(outputData, "gray")
+		      }
+		    ]
+		  },
+		  options: {
+		    plugins: {
+			legend: {
+		    	    display: false
+		    	}
+		    }
+		  }
+		})
 		break;
 	}
     }
