@@ -1,5 +1,3 @@
-import '../lib/chart.js'
-
 import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
 (function(imageproc) {
@@ -258,9 +256,9 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
         // Find the number of pixels to ignore from the percentage
         var pixelsToIgnore = (inputData.data.length / 4) * percentage / 2;
 
-        let histogram, minMax;
+        var histogram, minMax;
 	switch (type) {
-            case "gray":
+	   case "gray":
                 // Build the grayscale histogram
                 histogram = buildHistogram(inputData, "gray");
 
@@ -269,6 +267,19 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
                 var min = minMax.min, max = minMax.max, range = max - min;
 
+                /**
+                 * DONE: You need to apply the correct adjustment to each pixel
+                 */
+
+                for (var i = 0; i < inputData.data.length; i += 4) {
+                    // Adjust each pixel based on the minimum and maximum values
+
+                    outputData.data[i]     = (inputData.data[i] - min) / range * 255;
+                    outputData.data[i + 1] = (inputData.data[i + 1] - min) / range * 255;
+                    outputData.data[i + 2] = (inputData.data[i + 2] - min) / range * 255;
+                }
+		break;
+	    case "color":
                 /**
                 * DONE: You need to apply the correct adjustment to each pixel
                 */
@@ -282,10 +293,10 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                 }
                 break;
 	    case "color":
-                /**
-                 * DONE: You need to apply the same procedure for each RGB channel
-                 *       based on what you have done for the grayscale version
-                 */
+          /**
+           * DONE: You need to apply the same procedure for each RGB channel
+           *       based on what you have done for the grayscale version
+           */
 
 	        let histo_r = buildHistogram(inputData, "red")
 	        let histo_g = buildHistogram(inputData, "green")
@@ -306,6 +317,8 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                     outputData.data[i + 1] = (inputData.data[i + 1] - min_g) / range_g * 255;
                     outputData.data[i + 2] = (inputData.data[i + 2] - min_b) / range_b * 255;
                 }
+                break;
+
 	    case "gray-equal": {
                 histogram = buildHistogram(inputData, "gray");
 
@@ -339,94 +352,20 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
                 }
     
-		const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
-    		const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
+                const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
+                const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
 
-    		updateHistogram(oldChart, [{
-    		  data: histogram,
-    		  backgroundColor: "rgb(128, 128, 128)"
-    		}]);
-    		updateHistogram(newChart, [{
-    		  data: buildHistogram(outputData, "gray"),
-    		  backgroundColor: "rgb(128, 128, 128)"
-    		}]);
-		    // const chart = new Chart(document.getElementById("histogram-before"), {
-		    //   type: 'bar',
-		    //   data: {
-		    //     labels: [...Array(256).keys()],
-		    //     datasets: [
-		    //       {
-		    //         data: histogram,
-		    //         backgroundColor: "rgb(128, 128, 128)"
-		    //       }
-		    //     ]
-		    //   },
-		    //   options: {
-	            //     scales: {
-	            //       x: {
-	            //         grid: {
-	            //           display: false,
-	            //         },
-	            //         ticks: {
-	            //           display: false
-	            //         }
-	            //       },
-	            //       y: {
-	            //         grid: {
-	            //           display: false,
-	            //         },
-	            //         ticks: {
-	            //           display: false
-	            //         }
-	            //       }
-	            //     },
-		    //     plugins: {
-		    //         legend: {
-		    //             display: false
-		    //         }
-		    //     }
-		    //   }
-		    // })
-		    
-		    // const chart2 = new Chart(document.getElementById("histogram-after"), {
-		    //   type: 'bar',
-		    //   data: {
-		    //     labels: [...Array(256).keys()],
-		    //     datasets: [
-		    //       {
-		    //         data: buildHistogram(outputData, "gray"),
-                    //         backgroundColor: "rgb(128, 128, 128)"
-                    //       }
-                    //     ]
-                    //   },
-                    //   options: {
-                    //     scales: {
-                    //       x: {
-                    //         grid: {
-                    //           display: false,
-                    //         },
-                    //         ticks: {
-                    //           display: false
-                    //         }
-                    //       },
-                    //       y: {
-                    //         grid: {
-                    //           display: false,
-                    //         },
-                    //         ticks: {
-                    //           display: false
-                    //         }
-                    //       }
-                    //     },
-		    //     plugins: {
-		    //         legend: {
-		    //             display: false
-		    //         }
-		    //     }
-		    //   }
-		    // })
+                updateHistogram(oldChart, [{
+                  data: histogram,
+                  backgroundColor: "rgb(128, 128, 128)"
+                }]);
+                updateHistogram(newChart, [{
+                  data: buildHistogram(outputData, "gray"),
+                  backgroundColor: "rgb(128, 128, 128)"
+                }]);
             }
 		break;
+
 	    case "color-equal": {
 
                 histogram = {
@@ -491,5 +430,79 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 		break;
 	}
     }
+
+    imageproc._renderHistogram = function(inputData, outputData) {
+
+        var isRenderingRed = $("#histogram-red").prop("checked");
+        var isRenderingGreen = $("#histogram-green").prop("checked");
+        var isRenderingBlue = $("#histogram-blue").prop("checked");
+        var isRenderingGray = $("#histogram-gray").prop("checked");
+
+        var dataBefore = [];
+        var dataAfter = [];
+
+        if (isRenderingRed) {
+            let histogramBeforeRed = buildHistogram(inputData, "red");
+            let histogramAfterRed = buildHistogram(outputData, "red");
+            dataBefore.push({
+                label: "red-channel",
+                data: histogramBeforeRed,
+                backgroundColor: "rgba(255, 0, 0, 0.5)"
+            });
+            dataAfter.push({
+                label: "red-channel",
+                data: histogramAfterRed,
+                backgroundColor: "rgba(255, 0, 0, 0.5)"
+            });
+        }
+        if (isRenderingGreen) {
+            let histogramGreenBefore = buildHistogram(inputData, "green");
+            let histogramGreenAfter = buildHistogram(outputData, "green");
+            dataBefore.push({
+                label: "green-channel",
+                data: histogramGreenBefore,
+                backgroundColor: "rgba(0, 255, 0, 0.5)"
+            });
+            dataAfter.push({
+                label: "green-channel",
+                data: histogramGreenAfter,
+                backgroundColor: "rgba(0, 255, 0, 0.5)"
+            });
+        }
+        if (isRenderingBlue) {
+            let histogramBlueBefore = buildHistogram(inputData, "blue");
+            let histogramBlueAfter = buildHistogram(outputData, "blue");
+            dataBefore.push({
+                label: "blue-channel",
+                data: histogramBlueBefore,
+                backgroundColor: "rgba(0, 0, 255, 0.5)"
+            });
+            dataAfter.push({
+                label: "blue-channel",
+                data: histogramBlueAfter,
+                backgroundColor: "rgba(0, 0, 255, 0.5)"
+            });
+        }
+        if (isRenderingGray) {
+            let histogramGrayBefore = buildHistogram(inputData, "gray");
+            let histogramGrayAfter = buildHistogram(outputData, "gray");
+            dataBefore.push({
+                label: "gray-channel",
+                data: histogramGrayBefore,
+                backgroundColor: "rgba(128, 128, 128, 0.5)"
+            });
+            dataAfter.push({
+                label: "gray-channel",
+                data: histogramGrayAfter,
+                backgroundColor: "rgba(128, 128, 128, 0.5)"
+            });
+        }
+        const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
+        const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
+
+        updateHistogram(oldChart, dataBefore);
+        updateHistogram(newChart, dataAfter);
+    }
+
 
 }(window.imageproc = window.imageproc || {}));
