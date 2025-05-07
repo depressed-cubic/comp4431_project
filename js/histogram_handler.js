@@ -73,6 +73,8 @@ function updateHistogram(chart, data) {
     data: dataset.data,
     backgroundColor: dataset.backgroundColor || null,
     borderWidth: 0,
+    barPercentage: 1.0,
+    categoryPercentage: 1.0,
   }));
 
   chart.update();
