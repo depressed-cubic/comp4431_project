@@ -280,19 +280,6 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                 }
 		break;
 	    case "color":
-                /**
-                * DONE: You need to apply the correct adjustment to each pixel
-                */
-
-                for (var i = 0; i < inputData.data.length; i += 4) {
-                   // Adjust each pixel based on the minimum and maximum values
-
-                   outputData.data[i]     = (inputData.data[i] - min) / range * 255;
-                   outputData.data[i + 1] = (inputData.data[i + 1] - min) / range * 255;
-                   outputData.data[i + 2] = (inputData.data[i + 2] - min) / range * 255;
-                }
-                break;
-	    case "color":
           /**
            * DONE: You need to apply the same procedure for each RGB channel
            *       based on what you have done for the grayscale version
