@@ -112,4 +112,9 @@ $(document).ready(function() {
     $("#histogram-green").on("change", () => imageproc.renderHistogram());
     $("#histogram-blue").on("change", () => imageproc.renderHistogram());
     $("#histogram-gray").on("change", () => imageproc.renderHistogram());
+
+      $("#histogram-red-cdf").on("change", () => imageproc.renderHistogram());
+    $("#histogram-green-cdf").on("change", () => imageproc.renderHistogram());
+     $("#histogram-blue-cdf").on("change", () => imageproc.renderHistogram());
+     $("#histogram-gray-cdf").on("change", () => imageproc.renderHistogram());
 });

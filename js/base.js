@@ -410,6 +410,11 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
         var isRenderingBlue = $("#histogram-blue").prop("checked");
         var isRenderingGray = $("#histogram-gray").prop("checked");
 
+        var   isRenderingRedCdf =   $("#histogram-red-cdf").prop("checked");
+        var isRenderingGreenCdf = $("#histogram-green-cdf").prop("checked");
+        var  isRenderingBlueCdf =  $("#histogram-blue-cdf").prop("checked");
+        var  isRenderingGrayCdf =  $("#histogram-gray-cdf").prop("checked");
+
         var dataBefore = [];
         var dataAfter = [];
 
@@ -469,6 +474,82 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                 backgroundColor: "rgba(128, 128, 128, 0.5)"
             });
         }
+
+        if (isRenderingGrayCdf) {
+            let histogram_before = buildHistogram(inputData, "gray");
+            let histogram_after = buildHistogram(outputData, "gray");
+
+            let cdf_before = cdf_maker(histogram_before, Math.max.apply(null, histogram_before));
+            let cdf_after  = cdf_maker(histogram_after , Math.max.apply(null, histogram_after));
+
+            dataBefore.push({
+                label: "gray-channel-cdf",
+                data: cdf_before.map(n => [n, n + 1]),
+                backgroundcolor: "rgba(128, 128, 128, 0.5)"
+            });
+            dataAfter.push({
+                label: "gray-channel-cdf",
+                data: cdf_after.map(n => [n, n + 1]),
+                backgroundcolor: "rgba(128, 128, 128, 0.5)"
+            });
+        }
+        if (isRenderingRedCdf) {
+            let histogram_before = buildHistogram(inputData, "red");
+            let histogram_after = buildHistogram(outputData, "red");
+
+            let cdf_before = cdf_maker(histogram_before, Math.max.apply(null, histogram_before));
+            let cdf_after  = cdf_maker(histogram_after , Math.max.apply(null, histogram_after));
+
+            dataBefore.push({
+                label: "red-channel-cdf",
+                data: cdf_before.map(n => [n, n + 1]),
+                backgroundcolor: "rgba(256, 0, 0, 0.5)"
+            });
+            dataAfter.push({
+                label: "red-channel-cdf",
+                data: cdf_after.map(n => [n, n + 1]),
+                backgroundcolor: "rgba(256, 0, 0, 0.5)"
+            });
+        }
+
+        if (isRenderingBlueCdf) {
+            let histogram_before = buildHistogram(inputData, "blue");
+            let histogram_after = buildHistogram(outputData, "blue");
+
+            let cdf_before = cdf_maker(histogram_before, Math.max.apply(null, histogram_before));
+            let cdf_after  = cdf_maker(histogram_after , Math.max.apply(null, histogram_after));
+
+            dataBefore.push({
+                label: "blue-channel-cdf",
+                data: cdf_before.map(n => [n, n + 1]),
+                backgroundcolor: "rgba(0, 0, 256, 0.5)"
+            });
+            dataAfter.push({
+                label: "blue-channel-cdf",
+                data: cdf_after.map(n => [n, n + 1]),
+                backgroundcolor: "rgba(0, 0, 256, 0.5)"
+            });
+        }
+
+        if (isRenderingGreenCdf) {
+            let histogram_before = buildHistogram(inputData, "green");
+            let histogram_after = buildHistogram(outputData, "green");
+
+            let cdf_before = cdf_maker(histogram_before, Math.max.apply(null, histogram_before));
+            let cdf_after  = cdf_maker(histogram_after , Math.max.apply(null, histogram_after));
+
+            dataBefore.push({
+                label: "green-channel-cdf",
+                data: cdf_before.map(n => [n, n + 1]),
+                backgroundcolor: "rgba(0, 256, 0, 0.5)"
+            });
+            dataAfter.push({
+                label: "green-channel-cdf",
+                data: cdf_after.map(n => [n, n + 1]),
+                backgroundcolor: "rgba(0, 256, 0, 0.5)"
+            });
+        }
+
         const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
         const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
 
