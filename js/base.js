@@ -1048,9 +1048,9 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                                         b: cdfs.b[tile_x+1][tile_y][b] 
                                     }
                                     
-                                    new_r = lerp(f_1.r, f_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i)
-                                    new_g = lerp(f_1.g, f_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i)
-                                    new_b = lerp(f_1.b, f_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    new_r = lerp(f_1.r, f_2.r, (tile_x+1) * tile_width)(i)
+                                    new_g = lerp(f_1.g, f_2.g, (tile_x+1) * tile_width)(i)
+                                    new_b = lerp(f_1.b, f_2.b, (tile_x+1) * tile_width)(i)
                                     
                                 }
 
