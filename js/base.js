@@ -422,11 +422,13 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
             let histogramBeforeRed = buildHistogram(inputData, "red");
             let histogramAfterRed = buildHistogram(outputData, "red");
             dataBefore.push({
+                type: "bar",
                 label: "red-channel",
                 data: histogramBeforeRed,
                 backgroundColor: "rgba(255, 0, 0, 0.5)"
             });
             dataAfter.push({
+                type: "bar",
                 label: "red-channel",
                 data: histogramAfterRed,
                 backgroundColor: "rgba(255, 0, 0, 0.5)"
@@ -436,11 +438,13 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
             let histogramGreenBefore = buildHistogram(inputData, "green");
             let histogramGreenAfter = buildHistogram(outputData, "green");
             dataBefore.push({
+                type: "bar",
                 label: "green-channel",
                 data: histogramGreenBefore,
                 backgroundColor: "rgba(0, 255, 0, 0.5)"
             });
             dataAfter.push({
+                type: "bar",
                 label: "green-channel",
                 data: histogramGreenAfter,
                 backgroundColor: "rgba(0, 255, 0, 0.5)"
@@ -450,11 +454,13 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
             let histogramBlueBefore = buildHistogram(inputData, "blue");
             let histogramBlueAfter = buildHistogram(outputData, "blue");
             dataBefore.push({
+                type: "bar",
                 label: "blue-channel",
                 data: histogramBlueBefore,
                 backgroundColor: "rgba(0, 0, 255, 0.5)"
             });
             dataAfter.push({
+                type: "bar",
                 label: "blue-channel",
                 data: histogramBlueAfter,
                 backgroundColor: "rgba(0, 0, 255, 0.5)"
@@ -464,11 +470,13 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
             let histogramGrayBefore = buildHistogram(inputData, "gray");
             let histogramGrayAfter = buildHistogram(outputData, "gray");
             dataBefore.push({
+                type: "bar",
                 label: "gray-channel",
                 data: histogramGrayBefore,
                 backgroundColor: "rgba(128, 128, 128, 0.5)"
             });
             dataAfter.push({
+                type: "bar",
                 label: "gray-channel",
                 data: histogramGrayAfter,
                 backgroundColor: "rgba(128, 128, 128, 0.5)"
@@ -483,14 +491,16 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
             let cdf_after  = cdf_maker(histogram_after , Math.max.apply(null, histogram_after));
 
             dataBefore.push({
+                type: "line",
                 label: "gray-channel-cdf",
-                data: cdf_before.map(n => [n, n + 1]),
-                backgroundcolor: "rgba(128, 128, 128, 0.5)"
+                data: cdf_before,
+                borderColor: "rgb(128, 128, 128)"
             });
             dataAfter.push({
+                type: "line",
                 label: "gray-channel-cdf",
-                data: cdf_after.map(n => [n, n + 1]),
-                backgroundcolor: "rgba(128, 128, 128, 0.5)"
+                data: cdf_after,
+                borderColor: "rgb(128, 128, 128)"
             });
         }
         if (isRenderingRedCdf) {
@@ -501,14 +511,16 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
             let cdf_after  = cdf_maker(histogram_after , Math.max.apply(null, histogram_after));
 
             dataBefore.push({
+                type: "line",
                 label: "red-channel-cdf",
-                data: cdf_before.map(n => [n, n + 1]),
-                backgroundcolor: "rgba(256, 0, 0, 0.5)"
+                data: cdf_before,
+                borderColor: "rgb(255, 0, 0)"
             });
             dataAfter.push({
+                type: "line",
                 label: "red-channel-cdf",
-                data: cdf_after.map(n => [n, n + 1]),
-                backgroundcolor: "rgba(256, 0, 0, 0.5)"
+                data: cdf_after,
+                borderColor: "rgb(255, 0, 0)"
             });
         }
 
@@ -520,14 +532,16 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
             let cdf_after  = cdf_maker(histogram_after , Math.max.apply(null, histogram_after));
 
             dataBefore.push({
+                type: "line",
                 label: "blue-channel-cdf",
-                data: cdf_before.map(n => [n, n + 1]),
-                backgroundcolor: "rgba(0, 0, 256, 0.5)"
+                data: cdf_before,
+                borderColor: "rgb(0, 0, 255)"
             });
             dataAfter.push({
+                type: "line",
                 label: "blue-channel-cdf",
-                data: cdf_after.map(n => [n, n + 1]),
-                backgroundcolor: "rgba(0, 0, 256, 0.5)"
+                data: cdf_after,
+                borderColor: "rgb(0, 0, 255)"
             });
         }
 
@@ -539,14 +553,16 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
             let cdf_after  = cdf_maker(histogram_after , Math.max.apply(null, histogram_after));
 
             dataBefore.push({
+                type: "line",
                 label: "green-channel-cdf",
-                data: cdf_before.map(n => [n, n + 1]),
-                backgroundcolor: "rgba(0, 256, 0, 0.5)"
+                data: cdf_before,
+                borderColor: "rgb(0, 255, 0)"
             });
             dataAfter.push({
+                type: "line",
                 label: "green-channel-cdf",
-                data: cdf_after.map(n => [n, n + 1]),
-                backgroundcolor: "rgba(0, 256, 0, 0.5)"
+                data: cdf_after,
+                borderColor: "rgb(0, 255, 0)"
             });
         }
 

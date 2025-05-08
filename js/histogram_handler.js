@@ -64,17 +64,21 @@ function getChart(ctx) {
  * This clears all the existing datasets.
  * 
  * @param {Chart} chart - The Chart.js instance for the histogram.
- * @param {Array<{data: Array<number>, backgroundColor: string | null}>} data - The data to update the histogram with.
+ * @param {Array<{data: Array<number>, backgroundColor: string | null, borderColor: string| null, label: string, type: "bar" | "line"}>} data - The data to update the histogram with.
  * @returns {void}
  */
 function updateHistogram(chart, data) {
   chart.data.datasets = data.map((dataset) => ({
+    type: dataset.type,
     label: dataset.label,
     data: dataset.data,
+    borderColor: dataset.borderColor,
     backgroundColor: dataset.backgroundColor || null,
-    borderWidth: 0,
+    borderWidth: dataset.type === "line" ? 2 : 0,
     barPercentage: 1.0,
     categoryPercentage: 1.0,
+    pointRadius: 0,
+    pointHoverRadius: 3,
   }));
 
   chart.update();
