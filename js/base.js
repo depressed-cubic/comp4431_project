@@ -306,10 +306,10 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                 }
 		break;
             case "color":
-          /**
-           * DONE: You need to apply the same procedure for each RGB channel
-           *       based on what you have done for the grayscale version
-           */
+                /**
+                * DONE: You need to apply the same procedure for each RGB channel
+                *       based on what you have done for the grayscale version
+                */
 
 	        let histo_r = buildHistogram(inputData, "red")
 	        let histo_g = buildHistogram(inputData, "green")
@@ -400,6 +400,707 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
     		}]);
             }
 		break;
+
+            case "gray-a-equal": {
+
+                const TILE_ROW = 8
+                const TILE_COL = 8
+                const tile_width  = parseInt(inputData.width / TILE_ROW)
+                const tile_height = parseInt(inputData.height / TILE_COL)
+
+                /**
+                 *  helper to access inputData.data in 2d
+                 *  @param {number} `i` index in row
+                 *  @param {number} `j` index in column
+                 *  @returns {number[]} array of form [r, g, b, a]
+                 */
+                let input_data = (i, j) => {
+                    return [0, 1, 2, 3].map(k => inputData.data[4 * (parseInt(j) * inputData.width + parseInt(i)) + k])
+                }
+
+                /**
+                 *  helper to set output
+                 *  intentionally leaves alpha value unset
+                 *  @param {number} `i` index in row
+                 *  @param {number} `j` index in column
+                 *  @returns {(val: number) => void} a function that takes the pixel in `[r, g, b, a]` form and set the output accordingly
+                 */
+                let set_output = (i, j) => ((val) => {
+                    let [r, g, b, ] = val 
+                    outputData.data[4 * (parseInt(j) * inputData.width + parseInt(i)) + 0] = r
+                    outputData.data[4 * (parseInt(j) * inputData.width + parseInt(i)) + 1] = g
+                    outputData.data[4 * (parseInt(j) * inputData.width + parseInt(i)) + 2] = b
+                })
+
+                /**
+                 * make histogram of the (x,y)-th tile
+                */
+                let smol_hist_maker = (x, y) => {
+                    let histogram = new Array(256).fill(0);
+                    
+                    for (let i = x * tile_width; i < (x+1) * tile_width; i++) {
+                        for (let j = y * tile_height; j < (y+1) * tile_height; j++) {
+                            histogram[parseInt((input_data(i, j)[0] + input_data(i, j)[1] + input_data(i, j)[2]) / 3)]++;
+                        }
+                    }
+
+                    return histogram
+                }
+
+                // let cdfs = [...Array(TILE_ROW).keys()].map(i => [...Array(TILE_COL).keys()].map(j => [i, j]))
+
+                /**
+                 * A `TILE_ROW` x `TILE_COL` array of `number[]` cdf
+                */
+                let cdfs = new Array(TILE_ROW).fill(0)
+
+                for (let i = 0; i < TILE_ROW; i++) {
+                    cdfs[i] = new Array(TILE_COL)
+                }
+
+                // initialize cdf for each tile
+                for (let i = 0; i < TILE_ROW; i++) {
+                    for (let j = 0; j < TILE_COL; j++) {
+                        cdfs[i][j] = cdf_maker(smol_hist_maker(i, j))
+                    }
+                }
+
+                for (let i = 0; i < inputData.width; i++) {
+                    for (let j = 0; j < inputData.height; j++) {
+                        let tile_x = parseInt(i / tile_width)
+                        let tile_y = parseInt(j / tile_height)
+                        
+                        let center_x = tile_x * tile_width
+                        let center_y = tile_y * tile_height
+
+                        let pixel = input_data(i, j)
+
+                        let gray_val = parseInt((pixel[0] + pixel[1] + pixel[2]) / 3)
+
+                        let mult = 0
+                        /**
+                         * linear interpolation
+                        */
+                        let lerp = (f_1, f_2, x_1, x_2) => (x) => {
+                            return (f_1 * (x_2 - x)  + f_2 * (x - x_1) )/ (x_2 - x_1)
+                        }
+
+                        // left
+                        if (i < center_x) {
+
+                            // top
+                            if (j < center_y) {
+
+                                // top left corner
+                                if (tile_x == 0 && tile_y == 0) {
+                                    mult = cdfs[tile_x][tile_y][gray_val] / 255
+                                }
+
+                                // left edge
+                                else if (tile_x == 0) {
+                                    let f_1 = cdfs[tile_x][tile_y-1][gray_val] 
+                                    let f_2 = cdfs[tile_x][tile_y  ][gray_val] 
+                                    
+                                    mult = lerp(f_1, f_2, (tile_y-1) * tile_height, tile_y * tile_height)(j) / 255
+                                }
+                                
+                                // top edge
+                                else if (tile_y == 0) {
+                                    let f_1 = cdfs[tile_x-1][tile_y][gray_val] 
+                                    let f_2 = cdfs[tile_x  ][tile_y][gray_val] 
+                                    
+                                    mult = lerp(f_1, f_2, (tile_x-1) * tile_width, tile_x * tile_width)(i) / 255
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = cdfs[tile_x-1][tile_y-1][gray_val] 
+                                    let f_1_2 = cdfs[tile_x  ][tile_y-1][gray_val] 
+                                    let f_2_1 = cdfs[tile_x-1][tile_y  ][gray_val] 
+                                    let f_2_2 = cdfs[tile_x  ][tile_y  ][gray_val] 
+
+                                    let f_1 = lerp(f_1_1, f_1_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    let f_2 = lerp(f_2_1, f_2_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+
+                                    mult = lerp(f_1, f_2, (tile_y-1) * tile_height, tile_y * tile_height)(j) / 255
+                                }
+
+                            }
+                            // bottom
+                            else {
+
+                                // bottom left corner
+                                if (tile_x == 0 && tile_y == TILE_COL - 1) {
+                                    mult = cdfs[tile_x][tile_y][gray_val] / 255
+                                }
+
+                                // left edge
+                                else if (tile_x == 0) {
+                                    let f_1 = cdfs[tile_x][tile_y-1][gray_val] 
+                                    let f_2 = cdfs[tile_x][tile_y  ][gray_val] 
+                                    
+                                    mult = lerp(f_1, f_2, (tile_y-1) * tile_height, tile_y * tile_height)(j) / 255
+                                }
+                                
+                                // bottom edge
+                                else if (tile_y == TILE_COL - 1) {
+                                    let f_1 = cdfs[tile_x  ][tile_y][gray_val] 
+                                    let f_2 = cdfs[tile_x+1][tile_y][gray_val] 
+                                    
+                                    mult = lerp(f_1, f_2, tile_x * tile_width, (tile_x+1) * tile_width)(i) / 255
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = cdfs[tile_x  ][tile_y-1][gray_val] 
+                                    let f_1_2 = cdfs[tile_x+1][tile_y-1][gray_val] 
+                                    let f_2_1 = cdfs[tile_x  ][tile_y  ][gray_val] 
+                                    let f_2_2 = cdfs[tile_x+1][tile_y  ][gray_val] 
+
+                                    let f_1 = lerp(f_1_1, f_1_2, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    let f_2 = lerp(f_2_1, f_2_2, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+
+                                    mult = lerp(f_1, f_2, (tile_y-1) * tile_height, tile_y * tile_height)(j) / 255
+                                }
+                                
+                            }
+                            
+                        }
+                        // right
+                        else {
+                            
+                            // top
+                            if (j < center_y) {
+
+                                // top right corner
+                                if (tile_x == TILE_ROW - 1 && tile_y == 0) {
+                                    mult = cdfs[tile_x][tile_y][gray_val] / 255
+                                }
+
+                                // right edge
+                                else if (tile_x == TILE_ROW - 1) {
+                                    let f_1 = cdfs[tile_x][tile_y  ][gray_val] 
+                                    let f_2 = cdfs[tile_x][tile_y+1][gray_val] 
+                                    
+                                    mult = lerp(f_1, f_2, tile_y * tile_height, (tile_y+1) * tile_height)(j) / 255
+                                }
+                                
+                                // top edge
+                                else if (tile_y == 0) {
+                                    let f_1 = cdfs[tile_x-1][tile_y][gray_val] 
+                                    let f_2 = cdfs[tile_x  ][tile_y][gray_val] 
+                                    
+                                    mult = lerp(f_1, f_2, (tile_x-1) * tile_width, tile_x * tile_width)(i) / 255
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = cdfs[tile_x-1][tile_y  ][gray_val] 
+                                    let f_1_2 = cdfs[tile_x  ][tile_y  ][gray_val] 
+                                    let f_2_1 = cdfs[tile_x-1][tile_y+1][gray_val] 
+                                    let f_2_2 = cdfs[tile_x  ][tile_y+1][gray_val] 
+
+                                    let f_1 = lerp(f_1_1, f_1_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    let f_2 = lerp(f_2_1, f_2_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+
+                                    mult = lerp(f_1, f_2, tile_y * tile_height, (tile_y+1) * tile_height)(j) / 255
+                                }
+
+                            }
+                            // bottom
+                            else {
+
+                                // bottom right corner
+                                if (tile_x == TILE_ROW - 1 && tile_y == TILE_COL - 1) {
+                                    mult = cdfs[tile_x][tile_y][gray_val] / 255
+                                }
+
+                                // right edge
+                                else if (tile_x == TILE_ROW - 1) {
+                                    let f_1 = cdfs[tile_x][tile_y  ][gray_val] 
+                                    let f_2 = cdfs[tile_x][tile_y+1][gray_val] 
+                                    
+                                    mult = lerp(f_1, f_2, tile_y * tile_height, (tile_y+1) * tile_height)(j) / 255
+                                }
+                                
+                                // bottom edge
+                                else if (tile_y == TILE_COL - 1) {
+                                    let f_1 = cdfs[tile_x  ][tile_y][gray_val] 
+                                    let f_2 = cdfs[tile_x+1][tile_y][gray_val] 
+                                    
+                                    mult = lerp(f_1, f_2, tile_x * tile_width, (tile_x+1) * tile_width)(i) / 255
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = cdfs[tile_x  ][tile_y  ][gray_val] 
+                                    let f_1_2 = cdfs[tile_x+1][tile_y  ][gray_val] 
+                                    let f_2_1 = cdfs[tile_x  ][tile_y+1][gray_val] 
+                                    let f_2_2 = cdfs[tile_x+1][tile_y+1][gray_val] 
+
+                                    let f_1 = lerp(f_1_1, f_1_2, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    let f_2 = lerp(f_2_1, f_2_2, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+
+                                    mult = lerp(f_1, f_2, tile_y * tile_height, (tile_y+1) * tile_height)(j) / 255
+                                }
+                            }
+                            
+                        }
+
+                        set_output(i, j)(pixel.map(x => x * mult))
+                    }
+                }
+            }
+                break;
+
+            case "color-a-equal": {
+
+                const TILE_ROW = 8
+                const TILE_COL = 8
+                const tile_width  = parseInt(inputData.width / TILE_ROW)
+                const tile_height = parseInt(inputData.height / TILE_COL)
+
+                /**
+                 *  helper to access inputData.data in 2d
+                 *  @param {number} `i` index in row
+                 *  @param {number} `j` index in column
+                 *  @returns {number[]} array of form [r, g, b, a]
+                 */
+                let input_data = (i, j) => {
+                    return [0, 1, 2, 3].map(k => inputData.data[4 * (parseInt(j) * inputData.width + parseInt(i)) + k])
+                }
+
+                /**
+                 *  helper to set output
+                 *  intentionally leaves alpha value unset
+                 *  @param {number} `i` index in row
+                 *  @param {number} `j` index in column
+                 *  @returns {(val: number) => void} a function that takes the pixel in `[r, g, b, a]` form and set the output accordingly
+                 */
+                let set_output = (i, j) => ((val) => {
+                    let [r, g, b, ] = val 
+                    outputData.data[4 * (parseInt(j) * inputData.width + parseInt(i)) + 0] = r
+                    outputData.data[4 * (parseInt(j) * inputData.width + parseInt(i)) + 1] = g
+                    outputData.data[4 * (parseInt(j) * inputData.width + parseInt(i)) + 2] = b
+                })
+
+                /**
+                 * make histogram of the (x,y)-th tile
+                */
+                let smol_hist_maker = (x, y) => {
+                    let histogram = {
+                        r: new Array(256).fill(0),
+                        g: new Array(256).fill(0),
+                        b: new Array(256).fill(0),
+                    }
+                    
+                    for (let i = x * tile_width; i < (x+1) * tile_width; i++) {
+                        for (let j = y * tile_height; j < (y+1) * tile_height; j++) {
+                            histogram.r[input_data(i, j)[0]]++;
+                            histogram.g[input_data(i, j)[1]]++;
+                            histogram.b[input_data(i, j)[2]]++;
+                        }
+                    }
+
+                    return histogram
+                }
+
+                /**
+                 * A `TILE_ROW` x `TILE_COL` array of `number[]` cdf
+                */
+                let cdfs = {
+                    r: new Array(TILE_ROW).fill(0),
+                    g: new Array(TILE_ROW).fill(0),
+                    b: new Array(TILE_ROW).fill(0),
+                }
+
+                for (let i = 0; i < TILE_ROW; i++) {
+                    cdfs.r[i] = new Array(TILE_COL)
+                    cdfs.g[i] = new Array(TILE_COL)
+                    cdfs.b[i] = new Array(TILE_COL)
+                }
+
+                // initialize cdf for each tile
+                for (let i = 0; i < TILE_ROW; i++) {
+                    for (let j = 0; j < TILE_COL; j++) {
+                        let hist = smol_hist_maker(i, j)
+                        cdfs.r[i][j] = cdf_maker(hist.r)
+                        cdfs.g[i][j] = cdf_maker(hist.g)
+                        cdfs.b[i][j] = cdf_maker(hist.b)
+                    }
+                }
+
+                for (let i = 0; i < inputData.width; i++) {
+                    for (let j = 0; j < inputData.height; j++) {
+                        let tile_x = parseInt(i / tile_width)
+                        let tile_y = parseInt(j / tile_height)
+                        
+                        let center_x = tile_x * tile_width
+                        let center_y = tile_y * tile_height
+
+                        let [r, g, b, ] = input_data(i, j)
+
+                        /**
+                         * linear interpolation
+                        */
+                        let lerp = (f_1, f_2, x_1, x_2) => (x) => {
+                            return (f_1 * (x_2 - x)  + f_2 * (x - x_1) )/ (x_2 - x_1)
+                        }
+
+                        let new_r, new_g, new_b;
+
+                        // left
+                        if (i < center_x) {
+
+                            // top
+                            if (j < center_y) {
+
+                                // top left corner
+                                if (tile_x == 0 && tile_y == 0) {
+                                    new_r = cdfs.r[tile_x][tile_y][r] 
+                                    new_g = cdfs.g[tile_x][tile_y][g] 
+                                    new_b = cdfs.b[tile_x][tile_y][b] 
+                                }
+
+                                // left edge
+                                else if (tile_x == 0) {
+                                    let f_r_1 = cdfs.r[tile_x][tile_y-1][r] 
+                                    let f_r_2 = cdfs.r[tile_x][tile_y  ][r] 
+                                    let f_g_1 = cdfs.g[tile_x][tile_y-1][g] 
+                                    let f_g_2 = cdfs.g[tile_x][tile_y  ][g] 
+                                    let f_b_1 = cdfs.b[tile_x][tile_y-1][b] 
+                                    let f_b_2 = cdfs.b[tile_x][tile_y  ][b] 
+                                    
+                                    new_r = lerp(f_r_1, f_r_2, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                    new_g = lerp(f_g_1, f_g_2, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                    new_b = lerp(f_b_1, f_b_2, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                }
+                                
+                                // top edge
+                                else if (tile_y == 0) {
+                                    let f_r_1 = cdfs.r[tile_x-1][tile_y][r] 
+                                    let f_g_1 = cdfs.g[tile_x-1][tile_y][g] 
+                                    let f_b_1 = cdfs.b[tile_x-1][tile_y][b] 
+                                    let f_r_2 = cdfs.r[tile_x][tile_y][r] 
+                                    let f_g_2 = cdfs.g[tile_x][tile_y][g] 
+                                    let f_b_2 = cdfs.b[tile_x][tile_y][b] 
+                                    
+                                    new_r = lerp(f_r_1, f_r_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    new_g = lerp(f_g_1, f_g_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    new_b = lerp(f_b_1, f_b_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = {
+                                        r: cdfs.r[tile_x-1][tile_y-1][r],
+                                        g: cdfs.g[tile_x-1][tile_y-1][g],
+                                        b: cdfs.b[tile_x-1][tile_y-1][b] 
+                                    }
+                                    let f_1_2 = {
+                                        r: cdfs.r[tile_x  ][tile_y-1][r],
+                                        g: cdfs.g[tile_x  ][tile_y-1][g],
+                                        b: cdfs.b[tile_x  ][tile_y-1][b] 
+                                    }
+                                    let f_2_1 = {
+                                        r: cdfs.r[tile_x-1][tile_y  ][r],
+                                        g: cdfs.g[tile_x-1][tile_y  ][g],
+                                        b: cdfs.b[tile_x-1][tile_y  ][b] 
+                                    }
+                                    let f_2_2 = {
+                                        r: cdfs.r[tile_x  ][tile_y  ][r],
+                                        g: cdfs.g[tile_x  ][tile_y  ][g],
+                                        b: cdfs.b[tile_x  ][tile_y  ][b] 
+                                    }
+
+                                    let f_1 = {
+                                        r: lerp(f_1_1.r, f_1_2.r, (tile_x-1) * tile_width, tile_x * tile_width)(i),
+                                        g: lerp(f_1_1.g, f_1_2.g, (tile_x-1) * tile_width, tile_x * tile_width)(i),
+                                        b: lerp(f_1_1.b, f_1_2.b, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    }
+                                    let f_2 = {
+                                        r: lerp(f_2_1.r, f_2_2.r, (tile_x-1) * tile_width, tile_x * tile_width)(i),
+                                        g: lerp(f_2_1.g, f_2_2.g, (tile_x-1) * tile_width, tile_x * tile_width)(i),
+                                        b: lerp(f_2_1.b, f_2_2.b, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    }
+
+                                    new_r = lerp(f_1.r, f_2.r, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                    new_g = lerp(f_1.g, f_2.g, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                    new_b = lerp(f_1.b, f_2.b, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                }
+
+                            }
+                            // bottom
+                            else {
+
+                                // bottom left corner
+                                if (tile_x == 0 && tile_y == TILE_COL - 1) {
+                                    new_r = cdfs.r[tile_x][tile_y][r]
+                                    new_g = cdfs.g[tile_x][tile_y][g]
+                                    new_b = cdfs.b[tile_x][tile_y][b]
+                                }
+
+                                // left edge
+                                else if (tile_x == 0) {
+                                    let f_1 = {
+                                        r: cdfs.r[tile_x][tile_y-1][r],
+                                        g: cdfs.g[tile_x][tile_y-1][g],
+                                        b: cdfs.b[tile_x][tile_y-1][b] 
+                                    }
+                                    let f_2 = {
+                                        r: cdfs.r[tile_x][tile_y  ][r],
+                                        g: cdfs.g[tile_x][tile_y  ][g],
+                                        b: cdfs.b[tile_x][tile_y  ][b] 
+                                    }
+                                    
+                                    new_r = lerp(f_1.r, f_2.r, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                    new_g = lerp(f_1.g, f_2.g, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                    new_b = lerp(f_1.b, f_2.b, (tile_y-1) * tile_height, tile_y * tile_height)(j)
+                                }
+                                
+                                // bottom edge
+                                else if (tile_y == TILE_COL - 1) {
+                                    let f_1 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    let f_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y  ][r],
+                                        g: cdfs.g[tile_x+1][tile_y  ][g],
+                                        b: cdfs.b[tile_x+1][tile_y  ][b] 
+                                    }
+                                    
+                                    new_r = lerp(f_1.r, f_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i) 
+                                    new_g = lerp(f_1.g, f_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i) 
+                                    new_b = lerp(f_1.b, f_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i) 
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = {
+                                        r: cdfs.r[tile_x][tile_y-1][r],
+                                        g: cdfs.g[tile_x][tile_y-1][g],
+                                        b: cdfs.b[tile_x][tile_y-1][b] 
+                                    }
+                                    let f_1_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y-1][r],
+                                        g: cdfs.g[tile_x+1][tile_y-1][g],
+                                        b: cdfs.b[tile_x+1][tile_y-1][b] 
+                                    }
+                                    let f_2_1 = {
+                                        r: cdfs.r[tile_x][tile_y  ][r],
+                                        g: cdfs.g[tile_x][tile_y  ][g],
+                                        b: cdfs.b[tile_x][tile_y  ][b] 
+                                    }
+                                    let f_2_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y  ][r],
+                                        g: cdfs.g[tile_x+1][tile_y  ][g],
+                                        b: cdfs.b[tile_x+1][tile_y  ][b] 
+                                    }
+
+                                    let f_1 = {
+                                        r: lerp(f_1_1.r, f_1_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        g: lerp(f_1_1.g, f_1_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        b: lerp(f_1_1.b, f_1_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    }
+                                    let f_2 = {
+                                        r: lerp(f_2_1.r, f_2_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        g: lerp(f_2_1.g, f_2_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        b: lerp(f_2_1.b, f_2_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    }
+
+                                    new_r = lerp(f_1.r, f_2.r, (tile_y-1) * tile_height, tile_y * tile_height)(j) 
+                                    new_g = lerp(f_1.g, f_2.g, (tile_y-1) * tile_height, tile_y * tile_height)(j) 
+                                    new_b = lerp(f_1.b, f_2.b, (tile_y-1) * tile_height, tile_y * tile_height)(j) 
+                                }
+                                
+                            }
+                            
+                        }
+                        // right
+                        else {
+                            
+                            // top
+                            if (j < center_y) {
+
+                                // top right corner
+                                if (tile_x == TILE_ROW - 1 && tile_y == 0) {
+                                    new_r = cdfs.r[tile_x][tile_y][r]
+                                    new_g = cdfs.g[tile_x][tile_y][g]
+                                    new_b = cdfs.b[tile_x][tile_y][b]
+                                }
+
+                                // right edge
+                                else if (tile_x == TILE_ROW - 1) {
+                                    let f_1 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    let f_2 = {
+                                        r: cdfs.r[tile_x][tile_y+1][r],
+                                        g: cdfs.g[tile_x][tile_y+1][g],
+                                        b: cdfs.b[tile_x][tile_y+1][b] 
+                                    }
+                                    
+                                    new_r = lerp(f_1.r, f_2.r, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_g = lerp(f_1.g, f_2.g, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_b = lerp(f_1.b, f_2.b, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                }
+                                
+                                // top edge
+                                else if (tile_y == 0) {
+                                    let f_1 = {
+                                        r: cdfs.r[tile_x-1][tile_y][r],
+                                        g: cdfs.g[tile_x-1][tile_y][g],
+                                        b: cdfs.b[tile_x-1][tile_y][b] 
+                                    }
+                                    let f_2 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    
+                                    new_r = lerp(f_1.r, f_2.r, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    new_g = lerp(f_1.g, f_2.g, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    new_b = lerp(f_1.b, f_2.b, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = {
+                                        r: cdfs.r[tile_x-1][tile_y][r],
+                                        g: cdfs.g[tile_x-1][tile_y][g],
+                                        b: cdfs.b[tile_x-1][tile_y][b] 
+                                    }
+                                    let f_1_2 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    let f_2_1 = {
+                                        r: cdfs.r[tile_x-1][tile_y+1][r],
+                                        g: cdfs.g[tile_x-1][tile_y+1][g],
+                                        b: cdfs.b[tile_x-1][tile_y+1][b] 
+                                    }
+                                    let f_2_2 = {
+                                        r: cdfs.r[tile_x][tile_y+1][r],
+                                        g: cdfs.g[tile_x][tile_y+1][g],
+                                        b: cdfs.b[tile_x][tile_y+1][b] 
+                                    }
+
+                                    let f_1 = {
+                                        r: lerp(f_1_1.r, f_1_2.r, (tile_x-1) * tile_width, tile_x * tile_width)(i),
+                                        g: lerp(f_1_1.g, f_1_2.g, (tile_x-1) * tile_width, tile_x * tile_width)(i),
+                                        b: lerp(f_1_1.b, f_1_2.b, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    }
+                                    let f_2 = {
+                                        r: lerp(f_2_1.r, f_2_2.r, (tile_x-1) * tile_width, tile_x * tile_width)(i),
+                                        g: lerp(f_2_1.g, f_2_2.g, (tile_x-1) * tile_width, tile_x * tile_width)(i),
+                                        b: lerp(f_2_1.b, f_2_2.b, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    }
+
+                                    new_r = lerp(f_1.r, f_2.r, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_g = lerp(f_1.g, f_2.g, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_b = lerp(f_1.b, f_2.b, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                }
+
+                            }
+                            // bottom
+                            else {
+
+                                // bottom right corner
+                                if (tile_x == TILE_ROW - 1 && tile_y == TILE_COL - 1) {
+                                    new_r = cdfs.r[tile_x][tile_y][r]
+                                    new_g = cdfs.g[tile_x][tile_y][g]
+                                    new_b = cdfs.b[tile_x][tile_y][b]
+                                }
+
+                                // right edge
+                                else if (tile_x == TILE_ROW - 1) {
+                                    let f_1 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    let f_2 = {
+                                        r: cdfs.r[tile_x][tile_y+1][r],
+                                        g: cdfs.g[tile_x][tile_y+1][g],
+                                        b: cdfs.b[tile_x][tile_y+1][b] 
+                                    }
+                                    
+                                    new_r = lerp(f_1.r, f_2.r, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_g = lerp(f_1.g, f_2.g, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_b = lerp(f_1.b, f_2.b, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                }
+                                
+                                // bottom edge
+                                else if (tile_y == TILE_COL - 1) {
+                                    let f_1 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    let f_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y][r],
+                                        g: cdfs.g[tile_x+1][tile_y][g],
+                                        b: cdfs.b[tile_x+1][tile_y][b] 
+                                    }
+                                    
+                                    new_r = lerp(f_1.r, f_2.r, (tile_x+1) * tile_width)(i)
+                                    new_g = lerp(f_1.g, f_2.g, (tile_x+1) * tile_width)(i)
+                                    new_b = lerp(f_1.b, f_2.b, (tile_x+1) * tile_width)(i)
+                                    
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    let f_1_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y][r],
+                                        g: cdfs.g[tile_x+1][tile_y][g],
+                                        b: cdfs.b[tile_x+1][tile_y][b] 
+                                    }
+                                    let f_2_1 = {
+                                        r: cdfs.r[tile_x][tile_y+1][r],
+                                        g: cdfs.g[tile_x][tile_y+1][g],
+                                        b: cdfs.b[tile_x][tile_y+1][b] 
+                                    }
+                                    let f_2_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y+1][r],
+                                        g: cdfs.g[tile_x+1][tile_y+1][g],
+                                        b: cdfs.b[tile_x+1][tile_y+1][b] 
+                                    }
+
+                                    let f_1 = {
+                                        r: lerp(f_1_1.r, f_1_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        g: lerp(f_1_1.g, f_1_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        b: lerp(f_1_1.b, f_1_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    }
+                                    let f_2 = {
+                                        r: lerp(f_2_1.r, f_2_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        g: lerp(f_2_1.g, f_2_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        b: lerp(f_2_1.b, f_2_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    }
+
+                                    new_r = lerp(f_1.r, f_2.r, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_g = lerp(f_1.g, f_2.g, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_b = lerp(f_1.b, f_2.b, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                }
+                            }
+                            
+                        }
+
+                        set_output(i, j)([new_r, new_g, new_b, 255])
+                    }
+                }
+            }
+                break;
 	}
     }
 
