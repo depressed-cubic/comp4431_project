@@ -214,6 +214,32 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
         return histogram;
     }
 
+    /**
+     * helper for making cdf
+     * @param {number[]} `histogram` - the source histogram
+     * @returns {number[]} - a cdf that hv value in [0, range]
+     */
+    let cdf_maker = (histogram, range = 255) => {
+
+	    let cum_histogram = [histogram[0]];
+
+	    let sum_histogram = histogram[0];
+
+	    // make cdf
+	    for (let i = 1; i < 256; i++) {
+		let tmp = (cum_histogram[i-1] + histogram[i])
+		cum_histogram.push(tmp)
+                sum_histogram += histogram[i]
+	    }
+
+	    // normalize cdf
+            for (let i = 0; i < 256; i++) {
+                cum_histogram[i] = parseInt(cum_histogram[i] / sum_histogram * range) 
+            }
+
+        return cum_histogram;
+    }
+
     /*
      * Find the min and max of the histogram
      */
@@ -258,7 +284,7 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
         var histogram, minMax;
 	switch (type) {
-	   case "gray":
+	    case "gray":
                 // Build the grayscale histogram
                 histogram = buildHistogram(inputData, "gray");
 
@@ -279,7 +305,7 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                     outputData.data[i + 2] = (inputData.data[i + 2] - min) / range * 255;
                 }
 		break;
-	    case "color":
+            case "color":
           /**
            * DONE: You need to apply the same procedure for each RGB channel
            *       based on what you have done for the grayscale version
@@ -309,22 +335,7 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 	    case "gray-equal": {
                 histogram = buildHistogram(inputData, "gray");
 
-		let cum_histogram = [histogram[0]];
-
-		let max_histogram = 0;
-
-		// make cdf
-		for (let i = 1; i < 256; i++) {
-		    let tmp = (cum_histogram[i-1] + histogram[i])
-		    cum_histogram.push(tmp)
-		    if (tmp > max_histogram) {
-			max_histogram = tmp
-		    }
-		}
-		// normalize cdf
-		for (let i = 0; i < 256; i++) {
-		    cum_histogram[i] = parseInt(cum_histogram[i] / max_histogram * 255) 
-		}
+                let cum_histogram = cdf_maker(histogram)
 
                 for (let i = 0; i < inputData.data.length; i += 4) {
                     // Adjust each pixel based on the minimum and maximum values
@@ -362,33 +373,9 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                 }
 
 		let cum_histogram = {
-                    r: [histogram.r[0]],
-                    g: [histogram.g[0]],
-                    b: [histogram.b[0]]
-                }
-
-		let max_histogram = {
-                    r: 0,
-                    g: 0,
-                    b: 0
-                }
-
-		// make cdf
-                for (let color in cum_histogram){
-		    for (let i = 1; i < 256; i++) {
-		        let tmp = (cum_histogram[color][i-1] + histogram[color][i])
-		        cum_histogram[color].push(tmp)
-		        if (tmp > max_histogram[color]) {
-		    	    max_histogram[color] = tmp
-		        }
-		    }
-                }
-
-		// normalize cdf
-                for (let color in cum_histogram){
-                    for (let i = 0; i < 256; i++) {
-                        cum_histogram[color][i] = parseInt(cum_histogram[color][i] / max_histogram[color] * 255) 
-                    }
+                    r: cdf_maker(histogram.r),
+                    g: cdf_maker(histogram.g),
+                    b: cdf_maker(histogram.b)
                 }
 
                 for (let i = 0; i < inputData.data.length; i += 4) {
@@ -400,8 +387,6 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
                 }
 
-                console.log(cum_histogram)
-    
 		const oldChart = initOrGetHistogram(document.getElementById("histogram-before"));
     		const newChart = initOrGetHistogram(document.getElementById("histogram-after"));
 
