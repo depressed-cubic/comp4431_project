@@ -536,31 +536,31 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
                                 // left edge
                                 else if (tile_x == 0) {
-                                    let f_1 = cdfs[tile_x][tile_y-1][gray_val] 
-                                    let f_2 = cdfs[tile_x][tile_y  ][gray_val] 
+                                    let f_1 = cdfs[tile_x][tile_y][gray_val] 
+                                    let f_2 = cdfs[tile_x][tile_y+1][gray_val] 
                                     
-                                    mult = lerp(f_1, f_2, (tile_y-1) * tile_height, tile_y * tile_height)(j) / 255
+                                    mult = lerp(f_1, f_2, (tile_y) * tile_height, (tile_y+1) * tile_height)(j) / 255
                                 }
                                 
                                 // bottom edge
                                 else if (tile_y == TILE_COL - 1) {
-                                    let f_1 = cdfs[tile_x  ][tile_y][gray_val] 
-                                    let f_2 = cdfs[tile_x+1][tile_y][gray_val] 
+                                    let f_1 = cdfs[tile_x-1][tile_y][gray_val] 
+                                    let f_2 = cdfs[tile_x][tile_y][gray_val] 
                                     
-                                    mult = lerp(f_1, f_2, tile_x * tile_width, (tile_x+1) * tile_width)(i) / 255
+                                    mult = lerp(f_1, f_2, (tile_x-1) * tile_width, (tile_x) * tile_width)(i) / 255
                                 }
 
                                 // otherwise 
                                 else {
-                                    let f_1_1 = cdfs[tile_x  ][tile_y-1][gray_val] 
-                                    let f_1_2 = cdfs[tile_x+1][tile_y-1][gray_val] 
-                                    let f_2_1 = cdfs[tile_x  ][tile_y  ][gray_val] 
-                                    let f_2_2 = cdfs[tile_x+1][tile_y  ][gray_val] 
+                                    let f_1_1 = cdfs[tile_x-1][tile_y][gray_val] 
+                                    let f_1_2 = cdfs[tile_x  ][tile_y][gray_val] 
+                                    let f_2_1 = cdfs[tile_x-1][tile_y+1][gray_val] 
+                                    let f_2_2 = cdfs[tile_x  ][tile_y+1][gray_val] 
 
-                                    let f_1 = lerp(f_1_1, f_1_2, tile_x * tile_width, (tile_x+1) * tile_width)(i)
-                                    let f_2 = lerp(f_2_1, f_2_2, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    let f_1 = lerp(f_1_1, f_1_2, (tile_x-1) * tile_width, (tile_x) * tile_width)(i)
+                                    let f_2 = lerp(f_2_1, f_2_2, (tile_x-1) * tile_width, (tile_x) * tile_width)(i)
 
-                                    mult = lerp(f_1, f_2, (tile_y-1) * tile_height, tile_y * tile_height)(j) / 255
+                                    mult = lerp(f_1, f_2, (tile_y) * tile_height, (tile_y+1) * tile_height)(j) / 255
                                 }
                                 
                             }
@@ -579,31 +579,31 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
                                 // right edge
                                 else if (tile_x == TILE_ROW - 1) {
-                                    let f_1 = cdfs[tile_x][tile_y  ][gray_val] 
-                                    let f_2 = cdfs[tile_x][tile_y+1][gray_val] 
+                                    let f_1 = cdfs[tile_x][tile_y-1][gray_val] 
+                                    let f_2 = cdfs[tile_x][tile_y  ][gray_val] 
                                     
-                                    mult = lerp(f_1, f_2, tile_y * tile_height, (tile_y+1) * tile_height)(j) / 255
+                                    mult = lerp(f_1, f_2, (tile_y-1) * tile_height, (tile_y) * tile_height)(j) / 255
                                 }
                                 
                                 // top edge
                                 else if (tile_y == 0) {
-                                    let f_1 = cdfs[tile_x-1][tile_y][gray_val] 
-                                    let f_2 = cdfs[tile_x  ][tile_y][gray_val] 
+                                    let f_1 = cdfs[tile_x  ][tile_y][gray_val] 
+                                    let f_2 = cdfs[tile_x+1][tile_y][gray_val] 
                                     
-                                    mult = lerp(f_1, f_2, (tile_x-1) * tile_width, tile_x * tile_width)(i) / 255
+                                    mult = lerp(f_1, f_2, tile_x * tile_width, (tile_x+1) * tile_width)(i) / 255
                                 }
 
                                 // otherwise 
                                 else {
-                                    let f_1_1 = cdfs[tile_x-1][tile_y  ][gray_val] 
-                                    let f_1_2 = cdfs[tile_x  ][tile_y  ][gray_val] 
-                                    let f_2_1 = cdfs[tile_x-1][tile_y+1][gray_val] 
-                                    let f_2_2 = cdfs[tile_x  ][tile_y+1][gray_val] 
+                                    let f_1_1 = cdfs[tile_x  ][tile_y-1][gray_val] 
+                                    let f_1_2 = cdfs[tile_x+1][tile_y-1][gray_val] 
+                                    let f_2_1 = cdfs[tile_x  ][tile_y][gray_val] 
+                                    let f_2_2 = cdfs[tile_x+1][tile_y][gray_val] 
 
-                                    let f_1 = lerp(f_1_1, f_1_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
-                                    let f_2 = lerp(f_2_1, f_2_2, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    let f_1 = lerp(f_1_1, f_1_2, (tile_x) * tile_width, (tile_x+1) * tile_width)(i)
+                                    let f_2 = lerp(f_2_1, f_2_2, (tile_x) * tile_width, (tile_x+1) * tile_width)(i)
 
-                                    mult = lerp(f_1, f_2, tile_y * tile_height, (tile_y+1) * tile_height)(j) / 255
+                                    mult = lerp(f_1, f_2, (tile_y-1) * tile_height, (tile_y) * tile_height)(j) / 255
                                 }
 
                             }
@@ -843,97 +843,6 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                                 // left edge
                                 else if (tile_x == 0) {
                                     let f_1 = {
-                                        r: cdfs.r[tile_x][tile_y-1][r],
-                                        g: cdfs.g[tile_x][tile_y-1][g],
-                                        b: cdfs.b[tile_x][tile_y-1][b] 
-                                    }
-                                    let f_2 = {
-                                        r: cdfs.r[tile_x][tile_y  ][r],
-                                        g: cdfs.g[tile_x][tile_y  ][g],
-                                        b: cdfs.b[tile_x][tile_y  ][b] 
-                                    }
-                                    
-                                    new_r = lerp(f_1.r, f_2.r, (tile_y-1) * tile_height, tile_y * tile_height)(j)
-                                    new_g = lerp(f_1.g, f_2.g, (tile_y-1) * tile_height, tile_y * tile_height)(j)
-                                    new_b = lerp(f_1.b, f_2.b, (tile_y-1) * tile_height, tile_y * tile_height)(j)
-                                }
-                                
-                                // bottom edge
-                                else if (tile_y == TILE_COL - 1) {
-                                    let f_1 = {
-                                        r: cdfs.r[tile_x][tile_y][r],
-                                        g: cdfs.g[tile_x][tile_y][g],
-                                        b: cdfs.b[tile_x][tile_y][b] 
-                                    }
-                                    let f_2 = {
-                                        r: cdfs.r[tile_x+1][tile_y  ][r],
-                                        g: cdfs.g[tile_x+1][tile_y  ][g],
-                                        b: cdfs.b[tile_x+1][tile_y  ][b] 
-                                    }
-                                    
-                                    new_r = lerp(f_1.r, f_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i) 
-                                    new_g = lerp(f_1.g, f_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i) 
-                                    new_b = lerp(f_1.b, f_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i) 
-                                }
-
-                                // otherwise 
-                                else {
-                                    let f_1_1 = {
-                                        r: cdfs.r[tile_x][tile_y-1][r],
-                                        g: cdfs.g[tile_x][tile_y-1][g],
-                                        b: cdfs.b[tile_x][tile_y-1][b] 
-                                    }
-                                    let f_1_2 = {
-                                        r: cdfs.r[tile_x+1][tile_y-1][r],
-                                        g: cdfs.g[tile_x+1][tile_y-1][g],
-                                        b: cdfs.b[tile_x+1][tile_y-1][b] 
-                                    }
-                                    let f_2_1 = {
-                                        r: cdfs.r[tile_x][tile_y  ][r],
-                                        g: cdfs.g[tile_x][tile_y  ][g],
-                                        b: cdfs.b[tile_x][tile_y  ][b] 
-                                    }
-                                    let f_2_2 = {
-                                        r: cdfs.r[tile_x+1][tile_y  ][r],
-                                        g: cdfs.g[tile_x+1][tile_y  ][g],
-                                        b: cdfs.b[tile_x+1][tile_y  ][b] 
-                                    }
-
-                                    let f_1 = {
-                                        r: lerp(f_1_1.r, f_1_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i),
-                                        g: lerp(f_1_1.g, f_1_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i),
-                                        b: lerp(f_1_1.b, f_1_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
-                                    }
-                                    let f_2 = {
-                                        r: lerp(f_2_1.r, f_2_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i),
-                                        g: lerp(f_2_1.g, f_2_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i),
-                                        b: lerp(f_2_1.b, f_2_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
-                                    }
-
-                                    new_r = lerp(f_1.r, f_2.r, (tile_y-1) * tile_height, tile_y * tile_height)(j) 
-                                    new_g = lerp(f_1.g, f_2.g, (tile_y-1) * tile_height, tile_y * tile_height)(j) 
-                                    new_b = lerp(f_1.b, f_2.b, (tile_y-1) * tile_height, tile_y * tile_height)(j) 
-                                }
-                                
-                            }
-                            
-                        }
-                        // right
-                        else {
-                            
-                            // top
-                            if (j < center_y) {
-
-                                // top right corner
-                                if (tile_x == TILE_ROW - 1 && tile_y == 0) {
-                                    new_r = cdfs.r[tile_x][tile_y][r]
-                                    new_g = cdfs.g[tile_x][tile_y][g]
-                                    new_b = cdfs.b[tile_x][tile_y][b]
-                                }
-
-                                // right edge
-                                else if (tile_x == TILE_ROW - 1) {
-                                    let f_1 = {
                                         r: cdfs.r[tile_x][tile_y][r],
                                         g: cdfs.g[tile_x][tile_y][g],
                                         b: cdfs.b[tile_x][tile_y][b] 
@@ -949,22 +858,22 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                                     new_b = lerp(f_1.b, f_2.b, tile_y * tile_height, (tile_y+1) * tile_height)(j)
                                 }
                                 
-                                // top edge
-                                else if (tile_y == 0) {
+                                // bottom edge
+                                else if (tile_y == TILE_COL - 1) {
                                     let f_1 = {
                                         r: cdfs.r[tile_x-1][tile_y][r],
                                         g: cdfs.g[tile_x-1][tile_y][g],
                                         b: cdfs.b[tile_x-1][tile_y][b] 
                                     }
                                     let f_2 = {
-                                        r: cdfs.r[tile_x][tile_y][r],
-                                        g: cdfs.g[tile_x][tile_y][g],
-                                        b: cdfs.b[tile_x][tile_y][b] 
+                                        r: cdfs.r[tile_x][tile_y  ][r],
+                                        g: cdfs.g[tile_x][tile_y  ][g],
+                                        b: cdfs.b[tile_x][tile_y  ][b] 
                                     }
                                     
-                                    new_r = lerp(f_1.r, f_2.r, (tile_x-1) * tile_width, tile_x * tile_width)(i)
-                                    new_g = lerp(f_1.g, f_2.g, (tile_x-1) * tile_width, tile_x * tile_width)(i)
-                                    new_b = lerp(f_1.b, f_2.b, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                    new_r = lerp(f_1.r, f_2.r, (tile_x-1) * tile_width, (tile_x) * tile_width)(i) 
+                                    new_g = lerp(f_1.g, f_2.g, (tile_x-1) * tile_width, (tile_x) * tile_width)(i) 
+                                    new_b = lerp(f_1.b, f_2.b, (tile_x-1) * tile_width, (tile_x) * tile_width)(i) 
                                 }
 
                                 // otherwise 
@@ -991,19 +900,110 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                                     }
 
                                     let f_1 = {
-                                        r: lerp(f_1_1.r, f_1_2.r, (tile_x-1) * tile_width, tile_x * tile_width)(i),
-                                        g: lerp(f_1_1.g, f_1_2.g, (tile_x-1) * tile_width, tile_x * tile_width)(i),
-                                        b: lerp(f_1_1.b, f_1_2.b, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                        r: lerp(f_1_1.r, f_1_2.r, (tile_x-1) * tile_width, (tile_x) * tile_width)(i),
+                                        g: lerp(f_1_1.g, f_1_2.g, (tile_x-1) * tile_width, (tile_x) * tile_width)(i),
+                                        b: lerp(f_1_1.b, f_1_2.b, (tile_x-1) * tile_width, (tile_x) * tile_width)(i)
                                     }
                                     let f_2 = {
-                                        r: lerp(f_2_1.r, f_2_2.r, (tile_x-1) * tile_width, tile_x * tile_width)(i),
-                                        g: lerp(f_2_1.g, f_2_2.g, (tile_x-1) * tile_width, tile_x * tile_width)(i),
-                                        b: lerp(f_2_1.b, f_2_2.b, (tile_x-1) * tile_width, tile_x * tile_width)(i)
+                                        r: lerp(f_2_1.r, f_2_2.r, (tile_x-1) * tile_width, (tile_x) * tile_width)(i),
+                                        g: lerp(f_2_1.g, f_2_2.g, (tile_x-1) * tile_width, (tile_x) * tile_width)(i),
+                                        b: lerp(f_2_1.b, f_2_2.b, (tile_x-1) * tile_width, (tile_x) * tile_width)(i)
                                     }
 
-                                    new_r = lerp(f_1.r, f_2.r, tile_y * tile_height, (tile_y+1) * tile_height)(j)
-                                    new_g = lerp(f_1.g, f_2.g, tile_y * tile_height, (tile_y+1) * tile_height)(j)
-                                    new_b = lerp(f_1.b, f_2.b, tile_y * tile_height, (tile_y+1) * tile_height)(j)
+                                    new_r = lerp(f_1.r, f_2.r, (tile_y) * tile_height, (tile_y+1) * tile_height)(j) 
+                                    new_g = lerp(f_1.g, f_2.g, (tile_y) * tile_height, (tile_y+1) * tile_height)(j) 
+                                    new_b = lerp(f_1.b, f_2.b, (tile_y) * tile_height, (tile_y+1) * tile_height)(j) 
+                                }
+                                
+                            }
+                            
+                        }
+                        // right
+                        else {
+                            
+                            // top
+                            if (j < center_y) {
+
+                                // top right corner
+                                if (tile_x == TILE_ROW - 1 && tile_y == 0) {
+                                    new_r = cdfs.r[tile_x][tile_y][r]
+                                    new_g = cdfs.g[tile_x][tile_y][g]
+                                    new_b = cdfs.b[tile_x][tile_y][b]
+                                }
+
+                                // right edge
+                                else if (tile_x == TILE_ROW - 1) {
+                                    let f_1 = {
+                                        r: cdfs.r[tile_x][tile_y-1][r],
+                                        g: cdfs.g[tile_x][tile_y-1][g],
+                                        b: cdfs.b[tile_x][tile_y-1][b] 
+                                    }
+                                    let f_2 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    
+                                    new_r = lerp(f_1.r, f_2.r, (tile_y-1) * tile_height, (tile_y) * tile_height)(j)
+                                    new_g = lerp(f_1.g, f_2.g, (tile_y-1) * tile_height, (tile_y) * tile_height)(j)
+                                    new_b = lerp(f_1.b, f_2.b, (tile_y-1) * tile_height, (tile_y) * tile_height)(j)
+                                }
+                                
+                                // top edge
+                                else if (tile_y == 0) {
+                                    let f_1 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    let f_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y][r],
+                                        g: cdfs.g[tile_x+1][tile_y][g],
+                                        b: cdfs.b[tile_x+1][tile_y][b] 
+                                    }
+                                    
+                                    new_r = lerp(f_1.r, f_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    new_g = lerp(f_1.g, f_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    new_b = lerp(f_1.b, f_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                }
+
+                                // otherwise 
+                                else {
+                                    let f_1_1 = {
+                                        r: cdfs.r[tile_x][tile_y-1][r],
+                                        g: cdfs.g[tile_x][tile_y-1][g],
+                                        b: cdfs.b[tile_x][tile_y-1][b] 
+                                    }
+                                    let f_1_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y-1][r],
+                                        g: cdfs.g[tile_x+1][tile_y-1][g],
+                                        b: cdfs.b[tile_x+1][tile_y-1][b] 
+                                    }
+                                    let f_2_1 = {
+                                        r: cdfs.r[tile_x][tile_y][r],
+                                        g: cdfs.g[tile_x][tile_y][g],
+                                        b: cdfs.b[tile_x][tile_y][b] 
+                                    }
+                                    let f_2_2 = {
+                                        r: cdfs.r[tile_x+1][tile_y][r],
+                                        g: cdfs.g[tile_x+1][tile_y][g],
+                                        b: cdfs.b[tile_x+1][tile_y][b] 
+                                    }
+
+                                    let f_1 = {
+                                        r: lerp(f_1_1.r, f_1_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        g: lerp(f_1_1.g, f_1_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        b: lerp(f_1_1.b, f_1_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    }
+                                    let f_2 = {
+                                        r: lerp(f_2_1.r, f_2_2.r, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        g: lerp(f_2_1.g, f_2_2.g, tile_x * tile_width, (tile_x+1) * tile_width)(i),
+                                        b: lerp(f_2_1.b, f_2_2.b, tile_x * tile_width, (tile_x+1) * tile_width)(i)
+                                    }
+
+                                    new_r = lerp(f_1.r, f_2.r, (tile_y-1) * tile_height, (tile_y) * tile_height)(j)
+                                    new_g = lerp(f_1.g, f_2.g, (tile_y-1) * tile_height, (tile_y) * tile_height)(j)
+                                    new_b = lerp(f_1.b, f_2.b, (tile_y-1) * tile_height, (tile_y) * tile_height)(j)
                                 }
 
                             }
