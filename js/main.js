@@ -118,6 +118,6 @@ $(document).ready(function() {
      $("#histogram-blue-cdf").on("change", () => imageproc.renderHistogram());
      $("#histogram-gray-cdf").on("change", () => imageproc.renderHistogram());
 
-    $("#export-input").on("click", () => imageproc.exportInputHistogram())
+    $("#export-input").on("click", () => {imageproc.exportInputHistogram().then(() => alert("Histogram copied to clipboard!")).catch(() => alert("Something went wrong."));});
 
 });

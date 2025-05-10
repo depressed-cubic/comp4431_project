@@ -43,7 +43,7 @@
         }
     }
 
-    imageproc.exportInputHistogram = function() { 
+    imageproc.exportInputHistogram = async function() { 
         var inputImage = input.getImageData(0, 0,
                          input.canvas.clientWidth, input.canvas.clientHeight);
         
@@ -54,10 +54,10 @@
             // imageproc.buildHistogram(inputImage, "green").concat(
             // imageproc.buildHistogram(inputImage, "blue")))).toString())
             //
-            navigator.clipboard.writeText(imageproc.buildHistogram(inputImage, "gray").concat(
-            imageproc.buildHistogram(inputImage, "red").concat(
-            imageproc.buildHistogram(inputImage, "green").concat(
-            imageproc.buildHistogram(inputImage, "blue")))).toString())
+            return navigator.clipboard.writeText(imageproc.buildHistogram(inputImage, "gray").concat(
+              imageproc.buildHistogram(inputImage, "red").concat(
+              imageproc.buildHistogram(inputImage, "green").concat(
+              imageproc.buildHistogram(inputImage, "blue")))).toString())
         }
     }
 
