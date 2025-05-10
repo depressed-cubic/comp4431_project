@@ -117,4 +117,7 @@ $(document).ready(function() {
     $("#histogram-green-cdf").on("change", () => imageproc.renderHistogram());
      $("#histogram-blue-cdf").on("change", () => imageproc.renderHistogram());
      $("#histogram-gray-cdf").on("change", () => imageproc.renderHistogram());
+
+    $("#export-input").on("click", () => imageproc.exportInputHistogram())
+
 });

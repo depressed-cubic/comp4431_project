@@ -43,6 +43,19 @@
         }
     }
 
+    imageproc.exportInputHistogram = function() { 
+        var inputImage = input.getImageData(0, 0,
+                         input.canvas.clientWidth, input.canvas.clientHeight);
+        
+        if (imageproc.buildHistogram) {
+            prompt("Please copy the histogram of the input image", 
+            imageproc.buildHistogram(inputImage, "gray").concat(
+            imageproc.buildHistogram(inputImage, "red").concat(
+            imageproc.buildHistogram(inputImage, "green").concat(
+            imageproc.buildHistogram(inputImage, "blue")))).toString())
+        }
+    }
+
     /*
      * Apply an image processing operation to an input image and
      * then put the output image in the output canvas

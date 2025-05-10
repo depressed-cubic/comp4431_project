@@ -214,6 +214,8 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
         return histogram;
     }
 
+    imageproc.buildHistogram = buildHistogram
+
     /**
      * helper for making cdf
      * @param {number[]} `histogram` - the source histogram
@@ -240,6 +242,34 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
         return cum_histogram;
     }
 
+    /**
+     * find the 'inverse' of a cdf
+     */
+    let inverse_cdf = (cdf) => {
+
+        let new_cdf = new Array(256).fill(-1)
+            
+        for (let i = 0; i < 256; i++) {
+            for (let j = cdf[i]; j >= 0; j--) {
+                if (new_cdf[j] == -1) {
+                    new_cdf[j] = i
+                } else {
+                    break;
+                }
+            }
+        }
+
+        for (let j = 255; j >= 0; j--) {
+            if (new_cdf[j] == -1) {
+                new_cdf[j] = 255
+            } else {
+                break;
+            }
+        }
+
+        return new_cdf;
+    }
+   
     /*
      * Find the min and max of the histogram
      */
@@ -283,6 +313,40 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
         var pixelsToIgnore = (inputData.data.length / 4) * percentage / 2;
 
         var histogram, minMax;
+
+        let target_histogram  ;
+        let target_histogram_r;
+        let target_histogram_g;
+        let target_histogram_b;
+
+        let raw = $("#target-histogram").val().split(",")
+        
+        let tmp = raw.map(str => parseInt(str))
+        if (tmp.length == 256 * 4) {
+            target_histogram   = tmp.slice(0, 256)
+            target_histogram_r = tmp.slice(256, 512)
+            target_histogram_g = tmp.slice(512, 512 + 256)
+            target_histogram_b = tmp.slice(512 + 256, 1024)
+            console.log(tmp)
+        } else {
+            target_histogram   = new Array(256).fill(1)
+            target_histogram_r = new Array(256).fill(1)
+            target_histogram_g = new Array(256).fill(1)
+            target_histogram_b = new Array(256).fill(1)
+        }
+
+        let target_cdf   = cdf_maker(target_histogram)
+        let target_cdf_r = cdf_maker(target_histogram_r)
+        let target_cdf_g = cdf_maker(target_histogram_g)
+        let target_cdf_b = cdf_maker(target_histogram_b)
+
+        let remap = inverse_cdf(target_cdf)
+        let remap_r = inverse_cdf(target_cdf_r)
+        let remap_g = inverse_cdf(target_cdf_g)
+        let remap_b = inverse_cdf(target_cdf_b)
+
+        console.log(remap, "remap")
+        
 	switch (type) {
 	    case "gray":
                 // Build the grayscale histogram
@@ -342,7 +406,7 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
 
 		    let gray = (inputData.data[i] + inputData.data[i + 1] + inputData.data[i + 2]) / 3
 
-		    let mult = cum_histogram[Math.min(255, parseInt(gray))] / gray
+		    let mult = remap[cum_histogram[Math.min(255, parseInt(gray))]] / gray
 
 		    outputData.data[i]     = Math.min(255, inputData.data[i]     * mult)
                     outputData.data[i + 1] = Math.min(255, inputData.data[i + 1] * mult)
@@ -381,9 +445,9 @@ import { initOrGetHistogram, updateHistogram } from './histogram_handler.js'
                 for (let i = 0; i < inputData.data.length; i += 4) {
 
                     // Adjust each pixel based on the minimum and maximum values
-		    outputData.data[i]     = Math.min(255, cum_histogram.r[inputData.data[i]])
-                    outputData.data[i + 1] = Math.min(255, cum_histogram.g[inputData.data[i + 1]])
-                    outputData.data[i + 2] = Math.min(255, cum_histogram.b[inputData.data[i + 2]])
+		    outputData.data[i]     = Math.min(255, remap_r[cum_histogram.r[inputData.data[i]]    ])
+                    outputData.data[i + 1] = Math.min(255, remap_g[cum_histogram.g[inputData.data[i + 1]]])
+                    outputData.data[i + 2] = Math.min(255, remap_b[cum_histogram.b[inputData.data[i + 2]]])
 
                 }
 
