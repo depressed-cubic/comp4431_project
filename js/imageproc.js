@@ -48,8 +48,13 @@
                          input.canvas.clientWidth, input.canvas.clientHeight);
         
         if (imageproc.buildHistogram) {
-            prompt("Please copy the histogram of the input image", 
-            imageproc.buildHistogram(inputImage, "gray").concat(
+            // prompt("Please copy the histogram of the input image", 
+            // imageproc.buildHistogram(inputImage, "gray").concat(
+            // imageproc.buildHistogram(inputImage, "red").concat(
+            // imageproc.buildHistogram(inputImage, "green").concat(
+            // imageproc.buildHistogram(inputImage, "blue")))).toString())
+            //
+            navigator.clipboard.writeText(imageproc.buildHistogram(inputImage, "gray").concat(
             imageproc.buildHistogram(inputImage, "red").concat(
             imageproc.buildHistogram(inputImage, "green").concat(
             imageproc.buildHistogram(inputImage, "blue")))).toString())
